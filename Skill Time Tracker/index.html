@@ -1,0 +1,2353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracker.io</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   GLOBAL VARIABLES & BASE STYLES
+============================================================ */
+:root {
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Premium Dark Editorial Color Palette */
+  --bg-app: #121212;          
+  --bg-card: #1e1e1e;         
+  
+  /* Strict 3-Tier Typographic Hierarchy for Dark Mode */
+  --text: #ececec;        /* Tier 1: ONLY Main Titles & Active States */
+  --text-dim: #a0a0a0;    /* Tier 2: Data values, standard body text, list items */
+  --text-faint: #666666;  /* Tier 3: Labels, metadata, passive borders */
+  
+  --border: #2c2c2c;    
+  --border-light: #3a3a3a;
+  --bg-elevated: #282828;
+  
+  /* Functional Accents */
+  --accent: #548c71;          
+  --accent-hover: #63a183;
+  --danger: #cf6679;          
+  
+  /* Radii */
+  --radius-lg: 16px;
+  --radius-md: 20px; 
+  --radius-sm: 8px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-dim); /* Default body text shifted to Tier 2 to reduce glare */
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dark themed scrollbar (wider track, not taller) for the whole app */
+html { scrollbar-color: var(--border-light) var(--bg-app); }
+::-webkit-scrollbar { width: 14px; height: 14px; }
+::-webkit-scrollbar-track { background: var(--bg-app); }
+::-webkit-scrollbar-thumb { background-color: var(--border-light); border-radius: 8px; border: 3px solid var(--bg-app); }
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-faint); }
+
+.app-container {
+  max-width: 900px; 
+  margin: 0 auto;
+  padding: 2rem 1.5rem 5rem;
+}
+
+/* ============================================================
+   TYPOGRAPHY & UTILITIES
+============================================================ */
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+.hidden { display: none !important; }
+.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Hide number input spinners globally */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+/* ============================================================
+   HEADER & NAVBAR
+============================================================ */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.site-logo {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+.site-logo span { color: var(--accent); }
+.header-actions { display: flex; gap: 12px; }
+
+.btn-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-card); color: var(--text); transition: all 0.2s;
+}
+.btn-icon:hover { border-color: var(--text-dim); background: var(--border-light); }
+
+.btn-primary {
+  background: var(--accent); color: white;
+  padding: 0 20px; height: 40px; border-radius: 20px;
+  font-size: 14px; font-weight: 500;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.2s; gap: 6px;
+}
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+.btn-add-log {
+  background: var(--accent); color: white;
+  padding: 0 18px; height: 40px; border-radius: 20px;
+  font-size: 13.5px; font-weight: 500;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; transition: all 0.2s; white-space: nowrap;
+}
+.btn-add-log svg { width: 16px; height: 16px; }
+.btn-add-log:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+.btn-pause { background: #d4a017; color: white; }
+.btn-pause:hover { background: #e6b422; transform: translateY(-1px); }
+
+.btn-stop-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(207, 102, 121, 0.3);
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; color: var(--text-faint); transition: all 0.2s;
+}
+.btn-stop-icon:hover {
+  border-color: var(--danger); color: var(--danger);
+  background: rgba(207, 102, 121, 0.08);
+}
+
+.btn-secondary {
+  background: var(--bg-card); color: var(--text);
+  border: 1px solid var(--border); padding: 0 20px; height: 40px;
+  border-radius: 20px; font-size: 14px; font-weight: 500;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { background: var(--border-light); }
+
+/* ============================================================
+   HERO / ACTIVE TIMER
+============================================================ */
+.hero {
+  position: relative;
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  background: var(--bg-card); border-radius: var(--radius-lg);
+  border: 1px solid var(--border); box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+.hero::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 8px);
+  pointer-events: none;
+}
+.hero-empty { padding: 4rem 2rem; }
+.hero-empty .hero-title { font-family: var(--font-serif); font-size: 26px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+.hero-empty p { color: var(--text-dim); font-size: 14px; margin-bottom: 24px; }
+
+.hero-active-content {
+  display: flex; flex-direction: column; align-items: center;
+  width: 100%; gap: 2.5rem;
+}
+
+@media(min-width: 768px) {
+  .hero-active-content {
+    display: grid; grid-template-columns: 1fr auto; gap: 3rem;
+    text-align: left; align-items: center; width: 100%; max-width: 720px;
+  }
+}
+
+.hero-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; z-index: 1; }
+
+.hero-header-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.hero-skillname { font-family: var(--font-serif); font-size: 26px; font-weight: 500; color: var(--text); line-height: 1.1; margin: 0; }
+.goal-pill {
+  position: relative; overflow: hidden; isolation: isolate;
+  font-family: var(--font-sans); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #ffffff; background: rgba(255,255,255,0.06);
+  border: 1px solid var(--pill-color, var(--accent)); padding: 4px 10px; border-radius: 12px; font-weight: 600; white-space: nowrap;
+}
+.goal-pill-fill {
+  position: absolute; inset: 0; z-index: 0;
+  width: var(--pill-pct, 0%);
+  background: var(--pill-color, var(--accent));
+  transition: width 0.4s ease;
+}
+.goal-pill-label { position: relative; z-index: 1; }
+
+/* Tasks UI */
+.tasks-container { margin-bottom: 1.5rem; width: 100%; max-width: 420px; transition: max-height 0.3s ease; }
+.task-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.task-list-empty { font-size: 13px; color: var(--text-faint); padding: 10px 14px; }
+
+.task-completed-toggle {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px 4px;
+  font-size: 12px; font-weight: 500; color: var(--text-faint);
+  cursor: pointer; user-select: none; transition: color 0.2s;
+}
+.task-completed-toggle:hover { color: var(--text-dim); background: rgba(255,255,255,0.02); }
+.task-completed-toggle .chevron { width: 14px; height: 14px; transition: transform 0.2s; }
+.task-completed-toggle .chevron.expanded { transform: rotate(90deg); }
+
+.task-item {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  font-size: 13.5px; color: var(--text-dim); cursor: pointer; /* Shifted to Tier 2 */
+  padding: 10px 14px; border-radius: var(--radius-sm); transition: all 0.2s;
+  border: 1px solid var(--border); background: rgba(0, 0, 0, 0.25); overflow: hidden;
+}
+.task-item.dragging { opacity: 0.4; border-style: dashed; background: rgba(255, 255, 255, 0.05); }
+.task-item::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 8px);
+  pointer-events: none; z-index: 0;
+}
+.task-item > * { position: relative; z-index: 1; }
+.task-item:hover { border-color: var(--border-light); background: rgba(255, 255, 255, 0.02); color: var(--text); } /* Hover brings to Tier 1 */
+.task-item.selected { border-color: var(--text-dim); background: rgba(255, 255, 255, 0.05); color: var(--text); }
+.task-item.running { border-color: var(--accent); background: rgba(84, 140, 113, 0.08); color: var(--text); }
+.task-item.paused { border-color: #d4a017; background: rgba(212, 160, 23, 0.08); color: var(--text); }
+.task-item.done span.task-text { text-decoration: line-through; color: var(--text-faint); }
+
+.task-item .task-text { flex: 1; min-width: 0; }
+.task-edit-input {
+  flex: 1; background: transparent; border: none; color: var(--text);
+  font-size: 13.5px; font-family: inherit; outline: none;
+  border-bottom: 1px solid var(--accent); padding: 0; display: none; min-width: 0;
+}
+.task-item.editing .task-edit-input { display: block; }
+.task-item.editing .task-text { display: none; }
+.task-item.editing .task-actions { display: none; }
+
+.task-checkbox {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.task-checkbox:hover { border-color: var(--text-dim); }
+.task-item.done .task-checkbox { border-color: var(--text-dim); }
+
+.task-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.2s; align-items: center; }
+.task-item:hover .task-actions { opacity: 1; }
+.task-icon-btn { color: var(--text-faint); padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+.task-icon-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.task-icon-btn.task-del:hover { color: var(--danger); background: rgba(207,102,121,0.1); }
+.task-drag-handle { cursor: grab; color: var(--text-faint); padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+.task-drag-handle:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.task-drag-handle:active { cursor: grabbing; }
+
+.task-input-wrap {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  background: transparent; border-radius: var(--radius-sm); border: 1px dashed var(--border-light); transition: all 0.2s;
+}
+.task-input-wrap:focus-within { border-style: solid; border-color: var(--text-dim); background: rgba(255, 255, 255, 0.02); }
+.task-input-wrap svg { color: var(--text-faint); flex-shrink: 0; }
+.task-input { width: 100%; background: transparent; border: none; font-size: 13.5px; color: var(--text); font-family: inherit; }
+.task-input:focus { outline: none; }
+.task-input::placeholder { color: var(--text-faint); }
+
+.hero-actions { display: flex; gap: 8px; width: 100%; align-items: center; flex-wrap: wrap; }
+
+.hero-timer-zone { display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1; padding: 1rem; }
+.ring-wrap { position: relative; width: 180px; height: 180px; flex-shrink: 0; }
+.ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: var(--border-light); stroke-width: 4; }
+.ring-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset .4s ease; }
+.ring-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.ring-time { font-family: var(--font-serif); font-size: 30px; font-weight: 400; letter-spacing: 0.5px; color: var(--text-dim); font-feature-settings: "tnum" 1, "lnum" 1; } /* Shifted to Tier 2 */
+
+/* ============================================================
+   SKILLS GRID & CARDS
+============================================================ */
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; margin-top: 3rem; }
+.section-title { font-family: var(--font-serif); font-size: 18px; font-weight: 500; color: var(--text); } /* Tier 1 Header */
+
+.skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+
+.skill-card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.2s;
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 0.75rem;
+}
+.skill-card::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 8px); pointer-events: none; z-index: 0;
+}
+.skill-card > * { position: relative; z-index: 1; }
+.skill-card:hover { box-shadow: var(--shadow-hover); border-color: #4a4a4a; transform: translateY(-2px); }
+.skill-card.active-card { border-color: var(--text-dim); background: #242424; box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.card-tab { position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 2; }
+
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.card-name { font-family: var(--font-serif); font-size: 16px; font-weight: 500; color: var(--text); margin: 0; }
+.btn-edit { color: var(--text-faint); opacity: 0; transition: opacity 0.2s; }
+.skill-card:hover .btn-edit { opacity: 1; }
+.btn-edit:hover { color: var(--text); }
+
+.card-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-faint); }
+.card-stat b { color: var(--text-dim); font-weight: 500; } /* Tier 2 to prevent glaring out of the card */
+
+.skill-card-empty {
+  border: 2px dashed var(--border-light); background: transparent; border-radius: var(--radius-md);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  gap: 8px; min-height: 100px; cursor: pointer; transition: all 0.2s;
+}
+.skill-card-empty:hover { border-color: var(--text-dim); background: rgba(255,255,255,0.02); }
+.skill-card-empty p { font-size: 13.5px; font-weight: 500; color: var(--text-dim); }
+
+/* ============================================================
+   SKILL DASHBOARD OVERLAY
+============================================================ */
+.dashboard-overlay {
+  position: fixed; inset: 0; background: var(--bg-app); z-index: 200;
+  overflow-y: auto; overflow-x: hidden;
+  transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dashboard-overlay.active { transform: translateX(0); }
+
+.dash-container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+.dash-header-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.dash-back-btn { display: flex; align-items: center; gap: 8px; color: var(--text-faint); cursor: pointer; font-size: 13.5px; transition: color 0.2s; }
+.dash-back-btn:hover { color: var(--text-dim); }
+.dash-back-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.dash-header-banner {
+  position: relative; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem; margin-bottom: 2rem; overflow: hidden; box-shadow: var(--shadow-sm);
+}
+.dash-header-banner::before {
+  content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 8px); pointer-events: none; z-index: 0;
+}
+.dash-header-banner > * { position: relative; z-index: 1; }
+
+.dash-layout { display: flex; flex-direction: column; gap: 2.5rem; }
+.dash-section-title { font-family: var(--font-serif); font-size: 18px; font-weight: 500; color: var(--text); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+
+/* Heatmap */
+.heatmap-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 1.75rem 1.25rem; overflow: hidden; }
+.heatmap-month-labels { position: relative; margin-bottom: 6px; margin-left: 28px; height: 14px; }
+.heatmap-month-label { position: absolute; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); }
+.heatmap-body { display: flex; gap: 4px; }
+.heatmap-day-labels { display: flex; flex-direction: column; gap: 3px; padding-top: 1px; margin-right: 4px; }
+.heatmap-day-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); height: 12px; line-height: 12px; }
+.heatmap-col { display: flex; flex-direction: column; gap: 3px; flex: 1; max-width: 12px; min-width: 0; }
+.heatmap-cell {
+  width: 100%; aspect-ratio: 1; border-radius: 2px;
+  background: var(--bg-elevated); cursor: default;
+  transition: transform 0.1s; position: relative;
+}
+.heatmap-cell:hover { transform: scale(1.4); z-index: 10; }
+
+/* New Caret & Adjusted Tooltip */
+.heatmap-cell[data-tip]:hover::before {
+  content: "";
+  position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: rgba(20,20,20,0.95);
+  pointer-events: none; z-index: 21;
+}
+.heatmap-cell[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: rgba(20,20,20,0.95); color: var(--text);
+  font-size: 11px; font-family: var(--font-sans); font-weight: 500;
+  padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-light);
+  white-space: pre; text-align: center; line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: none; z-index: 20;
+}
+
+/* Smart Edge Alignment to Prevent Cropping */
+.heatmap-col:nth-last-child(-n+8) .heatmap-cell[data-tip]:hover::after {
+  left: auto; right: 0; transform: none;
+}
+.heatmap-col:nth-child(-n+8) .heatmap-cell[data-tip]:hover::after {
+  left: 0; right: auto; transform: none;
+}
+
+.heatmap-cell.today { box-shadow: 0 0 0 1.5px var(--text-faint); }
+.heatmap-legend { display: flex; align-items: center; gap: 6px; margin-top: 12px; justify-content: flex-end; }
+.heatmap-legend-label { font-size: 10px; color: var(--text-faint); }
+.heatmap-legend-cell { width: 11px; height: 11px; border-radius: 2px; }
+
+/* Session feed (GitHub commit list style) */
+.session-feed { display: flex; flex-direction: column; gap: 0; }
+.session-day-group { margin-bottom: 1.75rem; }
+.session-day-header {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-faint); margin-bottom: 10px;
+}
+.session-day-total { font-family: var(--font-serif); font-size: 12px; font-weight: 400; color: var(--text-faint); text-transform: none; letter-spacing: 0; margin-left: auto; white-space: nowrap; }
+.session-commit-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 14px; border-radius: var(--radius-sm);
+  background: var(--bg-card); border-left: 3px solid;
+  margin-bottom: 6px; transition: background-color 0.15s;
+}
+.session-commit-row:hover { background: rgba(255,255,255,0.02); }
+.session-commit-task { flex: 1; min-width: 0; font-size: 13.5px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-commit-duration { font-family: var(--font-serif); font-size: 14px; color: var(--text-dim); flex-shrink: 0; margin-right: 4px; }
+.session-commit-time { font-size: 11px; color: var(--text-faint); flex-shrink: 0; white-space: nowrap; }
+.session-commit-edit { color: var(--text-faint); padding: 4px; border-radius: 4px; display: flex; align-items: center; flex-shrink: 0; }
+.session-commit-edit:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+/* ============================================================
+   ANALYTICS SECTION
+============================================================ */
+.analytics-section { margin-top: 4rem; }
+
+.analytics-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.tabs { display: inline-flex; background: var(--bg-card); border: 1px solid var(--border); padding: 4px; border-radius: 20px; }
+.tab-btn { padding: 6px 16px; font-size: 13px; font-weight: 500; color: var(--text-dim); border-radius: 16px; transition: all 0.2s; }
+.tab-btn.active { background: var(--accent); color: white; box-shadow: var(--shadow-sm); border: 1px solid var(--accent); }
+
+.period-nav { display: flex; align-items: center; gap: 16px; }
+.period-label { font-family: var(--font-serif); font-size: 18px; font-weight: 500; min-width: 140px; text-align: center; color: var(--text); }
+
+/* Unified Analytics Panel */
+.analytics-panel {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm); position: relative;
+}
+.analytics-panel::before {
+  content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 8px); pointer-events: none; z-index: 0;
+  border-radius: var(--radius-lg);
+}
+.panel-section { position: relative; z-index: 1; padding: 3rem 2rem; }
+
+/* ---- Analytics Row 1: Balanced Stats ---- */
+.analytics-stats-row { display: flex; justify-content: space-around; gap: 1.5rem; margin-bottom: 4rem; }
+.stat-group { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+.stat-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-faint); font-weight: 600; }
+.stat-val { font-family: var(--font-serif); font-size: 32px; font-weight: 400; color: var(--text-dim); line-height: 1; font-feature-settings: "tnum" 1; } /* Shifted to Tier 2 */
+
+/* ---- Analytics Row 2: Spark Chart ---- */
+.hero-spark { position: relative; height: 130px; display: flex; flex-direction: column; margin-bottom: 1rem; }
+
+/* ---- Analytics Row 3: Solid Pie Layout ---- */
+.pie-container { display: flex; justify-content: center; align-items: center; padding: 0 2rem 3.5rem; width: 100%; }
+.pie-svg { width: 100%; max-width: 580px; height: auto; overflow: visible; display: block; margin: 0 auto; }
+
+/* Premium Trend bar chart */
+.bar-chart-area { position: relative; flex: 1; display: flex; align-items: flex-end; }
+.bar-track { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; gap: 6px; z-index: 1; }
+.bar-col { flex: 1; min-width: 0; height: 100%; display: flex; align-items: flex-end; position: relative; cursor: default; }
+.bar-fill {
+  position: relative;
+  width: 100%; min-height: 3px; border-radius: 4px 4px 1px 1px;
+  background: linear-gradient(to top, var(--accent) 0%, #75c59f 100%);
+  opacity: 0.8; transform: scaleY(0); transform-origin: bottom;
+  transition: opacity 0.15s, height 0.35s cubic-bezier(.4,0,.2,1);
+  animation: barRise 0.5s cubic-bezier(.2,.7,.3,1) forwards; animation-delay: calc(var(--i, 0) * 12ms);
+}
+@keyframes barRise { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.bar-col:hover .bar-fill { opacity: 1; }
+.bar-col.is-current .bar-fill { opacity: 1; background: linear-gradient(to top, var(--accent) 0%, var(--accent-hover) 100%); }
+.bar-col.is-empty .bar-fill { background: var(--border-light); opacity: 0.5; min-height: 2px;}
+.bar-col.is-empty:hover .bar-fill { opacity: 0.8; }
+
+/* Enhanced Tooltip Styles */
+.bar-col:hover .bar-fill[data-tip]::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+  background: rgba(30, 30, 30, 0.65); color: var(--text-dim); font-size: 11px; font-weight: 400; font-family: var(--font-sans);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: pre; text-align: center; line-height: 1.4; box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: none; z-index: 10;
+}
+.bar-col:hover .bar-fill[data-tip]::before {
+  content: ""; position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: rgba(30, 30, 30, 0.65); pointer-events: none; z-index: 10;
+}
+.bar-col.tooltip-start:hover .bar-fill[data-tip]::after { left: 0; transform: none; text-align: center; }
+.bar-col.tooltip-start:hover .bar-fill[data-tip]::before { left: 12px; transform: translateX(-50%); }
+.bar-col.tooltip-end:hover .bar-fill[data-tip]::after { left: auto; right: 0; transform: none; text-align: center; }
+.bar-col.tooltip-end:hover .bar-fill[data-tip]::before { left: auto; right: 12px; transform: translateX(50%); }
+
+.bar-labels { display: flex; gap: 6px; margin-top: 8px; }
+.bar-label-slot { flex: 1; min-width: 0; text-align: center; font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); }
+.bar-label-slot.active-label { color: var(--accent); }
+
+.empty-analytics { text-align: center; padding: 6rem 2rem; color: var(--text-faint); font-size: 16px; font-family: var(--font-serif); }
+
+/* ============================================================
+   MODALS, TOAST, TOOLTIPS
+============================================================ */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-content {
+  position: relative; background: var(--bg-card); width: 100%; max-width: 460px; max-height: 88vh;
+  overflow: hidden auto; border-radius: var(--radius-lg); padding: 1.75rem;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3); transform: translateY(10px); transition: transform 0.2s; border: 1px solid var(--border);
+}
+.modal-content::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 8px);
+  pointer-events: none; z-index: 0;
+}
+.modal-content > * { position: relative; z-index: 1; }
+.modal-overlay.active .modal-content { transform: translateY(0); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.125rem; }
+.modal-title { font-family: var(--font-serif); font-size: 18px; font-weight: 500; color: var(--text); }
+.form-group { margin-bottom: 1.125rem; }
+.form-group label { display: block; font-size: 12.5px; font-weight: 500; color: var(--text-dim); margin-bottom: 6px; }
+.form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; background: var(--bg-app); color: var(--text); }
+.form-control:focus { outline: none; border-color: var(--text-dim); background: var(--bg-card); }
+select.form-control {
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a0a0a0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+}
+.color-picker { display: flex; gap: 12px; }
+.color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.1s; }
+.color-swatch:hover { transform: scale(1.1); }
+.color-swatch.selected { box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--text); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 1.5rem; }
+
+#toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: var(--bg-app); padding: 12px 16px 12px 22px; border-radius: 24px; font-size: 13.5px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 1000; display: flex; align-items: center; gap: 16px; max-width: 90vw; }
+#toast.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+.toast-action-btn { background: none; border: none; color: var(--accent-hover); font-weight: 700; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer; padding: 0; flex-shrink: 0; white-space: nowrap; }
+.toast-action-btn:hover { text-decoration: underline; }
+
+.icon { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+
+/* Custom Confirmation Modal */
+.confirm-modal-content { max-width: 340px; text-align: center; padding: 2rem 1.5rem; }
+.confirm-modal-content .modal-title { margin-bottom: 8px; }
+.confirm-modal-content p { color: var(--text-dim); font-size: 14px; margin-bottom: 24px; }
+.confirm-actions { display: flex; gap: 12px; }
+
+/* ============================================================
+   SETTINGS PANEL
+============================================================ */
+.settings-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.settings-overlay.active { opacity: 1; pointer-events: auto; }
+.settings-panel {
+  position: relative; background: var(--bg-card); width: 100%; max-width: 540px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0; border: 1px solid var(--border-light); border-bottom: none;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.4); transform: translateY(20px); transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+  overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;
+}
+.settings-panel::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 8px);
+  pointer-events: none; z-index: 0;
+}
+.settings-panel > * { position: relative; z-index: 1; }
+.settings-overlay.active .settings-panel { transform: translateY(0); }
+@media (min-width: 640px) {
+  .settings-overlay { align-items: center; }
+  .settings-panel { border-radius: var(--radius-lg); border-bottom: 1px solid var(--border-light); transform: translateY(20px) scale(0.95); max-height: 85vh; width: 500px; }
+  .settings-overlay.active .settings-panel { transform: translateY(0) scale(1); }
+  .settings-drag-handle { display: none; }
+}
+.settings-drag-handle { width: 36px; height: 4px; background: var(--border-light); border-radius: 2px; margin: 14px auto 0; flex-shrink: 0; }
+.settings-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.settings-title { font-family: var(--font-serif); font-size: 18px; font-weight: 500; color: var(--text); }
+.settings-body { overflow-y: auto; flex: 1; padding: 8px 0 calc(env(safe-area-inset-bottom, 0px) + 40px); scrollbar-width: none; -ms-overflow-style: none; }
+.settings-body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.settings-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-faint); padding: 16px 24px 6px; }
+.settings-row { display: flex; align-items: center; gap: 14px; padding: 13px 24px; cursor: pointer; transition: background 0.15s; }
+.settings-row:last-of-type { border-bottom: none; }
+.settings-row:hover { background: rgba(255,255,255,0.025); }
+.settings-row-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.settings-row-icon.green { background: rgba(84,140,113,0.15); color: var(--accent); }
+.settings-row-icon.blue  { background: rgba(255,255,255,0.06); color: var(--text-dim); }
+.settings-row-icon.amber { background: rgba(212,160,23,0.15);  color: #d4a017; }
+.settings-row-icon.red   { background: rgba(207,102,121,0.15); color: var(--danger); }
+.settings-row-icon.purple{ background: rgba(255,255,255,0.06); color: var(--text-dim); }
+.settings-row-text { flex: 1; min-width: 0; }
+.settings-row-text strong { display: block; font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.settings-row-text span { font-size: 12px; color: var(--text-faint); }
+.settings-row-chevron { color: var(--text-faint); }
+.settings-divider { display: none; }
+
+/* Add log modal */
+.time-inputs { display: flex; gap: 12px; align-items: center; }
+.time-inputs input { width: 80px; text-align: center; }
+.time-label { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  
+  <header class="site-header">
+    <div class="site-logo">Tracker<span>.io</span></div>
+    <div class="header-actions">
+      <input type="file" id="fileImport" accept=".json" class="hidden">
+      <button class="btn-add-log" id="btnAddLogHeader" title="Add a log entry manually">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add log
+      </button>
+      <button class="btn-icon" id="btnSettings" title="Settings">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section id="heroArea"></section>
+
+    <div class="section-header">
+      <h2 class="section-title">Your skills</h2>
+    </div>
+    <section id="skillsGrid" class="skills-grid"></section>
+
+    <section id="analyticsArea" class="analytics-section"></section>
+  </main>
+
+</div>
+
+<!-- NEW: Dedicated Skill Dashboard Overlay -->
+<div id="skillDashboardOverlay" class="dashboard-overlay">
+  <div class="dash-container">
+    <div class="dash-header-bar">
+      <div class="dash-back-btn" onclick="closeSkillDashboard()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Back to Home
+      </div>
+    </div>
+    <div id="dashContentArea"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="skillModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle">Add Skill</h3>
+      <button class="btn-icon" id="btnCloseModal" style="border:none;">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label>Skill Name</label>
+      <input type="text" id="inpName" class="form-control" placeholder="e.g., Electronics, Python">
+    </div>
+    <div class="form-group">
+      <label>Daily Goal (minutes)</label>
+      <input type="number" id="inpGoal" class="form-control" placeholder="60">
+    </div>
+    <div class="form-group">
+      <label>Description (Optional)</label>
+      <textarea id="inpDesc" class="form-control" rows="2" placeholder="Why are you learning this?"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Color Identity</label>
+      <div class="color-picker" id="colorPicker"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary hidden" id="btnDeleteSkill" style="color:var(--danger); border-color:var(--border);">Delete</button>
+      <div style="flex:1"></div>
+      <button class="btn-secondary" id="btnCancelModal">Cancel</button>
+      <button class="btn-primary" id="btnSaveSkill">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Confirmation Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-content confirm-modal-content">
+    <h3 class="modal-title" id="confirmTitle">Are you sure?</h3>
+    <p id="confirmText"></p>
+    <div class="confirm-actions">
+      <button class="btn-secondary" style="flex: 1;" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-primary" style="flex: 1; background: var(--danger);" id="btnConfirmAction">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Settings Panel -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-drag-handle"></div>
+    <div class="settings-header">
+      <span class="settings-title">Settings</span>
+      <button class="btn-icon" id="btnCloseSettings" style="border:none;">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="settings-body">
+
+      <div class="settings-section-label">Data</div>
+      <div class="settings-row" id="sRowExport">
+        <div class="settings-row-icon green">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        </div>
+        <div class="settings-row-text">
+          <strong>Export Data</strong>
+          <span>Download a backup JSON file</span>
+        </div>
+        <svg class="icon settings-row-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+      <div class="settings-row" id="sRowImport">
+        <div class="settings-row-icon blue">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </div>
+        <div class="settings-row-text">
+          <strong>Import Data</strong>
+          <span>Restore from a backup file</span>
+        </div>
+        <svg class="icon settings-row-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+
+      <div class="settings-divider"></div>
+      <div class="settings-section-label">Danger Zone</div>
+      <div class="settings-row" id="sRowReset">
+        <div class="settings-row-icon red">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
+        </div>
+        <div class="settings-row-text">
+          <strong>Reset All Data</strong>
+          <span>Permanently erase all skills and sessions</span>
+        </div>
+        <svg class="icon settings-row-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+      <div style="height: 32px;"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add Log Modal -->
+<div class="modal-overlay" id="addLogModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Log Manually</h3>
+      <button class="btn-icon" id="btnCloseAddLog" style="border:none;">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label>Select Skill</label>
+      <select id="addLogSkillSelect" class="form-control" onchange="selectAddLogSkill(this.value)"></select>
+    </div>
+    <div class="form-group" id="addLogTaskGroup" style="display:none;">
+      <label>Task (Optional)</label>
+      <select id="addLogTask" class="form-control"></select>
+    </div>
+    <div class="form-group">
+      <label>Duration</label>
+      <div class="time-inputs">
+        <input type="number" id="addLogHours" class="form-control" min="0" max="23" value="0" placeholder="0">
+        <span class="time-label">hr</span>
+        <input type="number" id="addLogMins" class="form-control" min="0" max="59" value="30" placeholder="30">
+        <span class="time-label">min</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="addLogDate" class="form-control">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btnCancelAddLog">Cancel</button>
+      <button class="btn-primary" id="btnSaveLog">Save Log</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Log Modal -->
+<div class="modal-overlay" id="editLogModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit Session</h3>
+      <button class="btn-icon" onclick="closeEditLog()" style="border:none;">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="form-group" id="editLogTaskGroup">
+      <label>Task (Optional)</label>
+      <select id="editLogTask" class="form-control"></select>
+    </div>
+    <div class="form-group">
+      <label>Duration</label>
+      <div class="time-inputs">
+        <input type="number" id="editLogHours" class="form-control" min="0" max="23" placeholder="0">
+        <span class="time-label">hr</span>
+        <input type="number" id="editLogMins" class="form-control" min="0" max="59" placeholder="30">
+        <span class="time-label">min</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="editLogDate" class="form-control">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" style="color:var(--danger); border-color:var(--border);" onclick="deleteLog()">Delete</button>
+      <div style="flex:1"></div>
+      <button class="btn-secondary" onclick="closeEditLog()">Cancel</button>
+      <button class="btn-primary" onclick="saveEditLog()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   STATE & DATA MANAGEMENT
+============================================================ */
+const STORAGE_KEY = "tracker_io_data";
+const COLORS = ["#e0b03e", "#d9763d", "#4a90c4", "#5c9e6f", "#d4698f", "#9168c4", "#3f9b94"];
+
+let state = {
+  skills: [], 
+  sessions: [], 
+  active: null,
+};
+
+// Pagination/Display Limit State
+let visibleSkillsCount = 6;
+let visibleSessionsCount = 25;
+let expandedDashActiveTasks = false;
+let expandedDashDoneTasks = false;
+
+let selectedSkillId = null; 
+let dashboardSkillId = null;
+let selectedTaskId = null;
+let editSkillId = null;
+let currentPeriod = "day"; 
+let currentDate = new Date(); 
+let timerInterval = null;
+let draggedTaskId = null;
+let expandedHeroTasks = false;
+
+function generateId() { return Math.random().toString(36).substr(2, 9); }
+
+function loadState() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(saved) {
+    try {
+      state = JSON.parse(saved);
+      if(!state.skills) state.skills = [];
+      if(!state.sessions) state.sessions = [];
+      if(state.active && state.active.accumulatedSeconds === undefined) {
+        state.active.accumulatedSeconds = 0;
+      }
+      if(state.active && state.active.isPaused === undefined) {
+        state.active.isPaused = false;
+      }
+      // Recover orphaned active session (browser crash / force-close mid-session)
+      // If the session was running (not paused), add the time elapsed since segmentStart
+      if(state.active && !state.active.isPaused) {
+        const elapsed = (Date.now() - state.active.segmentStart) / 1000;
+        state.active.accumulatedSeconds += elapsed;
+        state.active.isPaused = true; // restore as paused so user can choose to resume or stop
+        state.active.segmentStart = Date.now();
+        saveState();
+      }
+    } catch(e) { console.error("Error loading state", e); }
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function getSkill(id) { return state.skills.find(s => s.id === id); }
+
+// Custom Confirm System
+let confirmCallback = null;
+function showConfirm(title, text, onConfirm) {
+  document.getElementById("confirmTitle").textContent = title;
+  document.getElementById("confirmText").textContent = text;
+  confirmCallback = onConfirm;
+  document.getElementById("confirmModal").classList.add("active");
+}
+function closeConfirm() {
+  document.getElementById("confirmModal").classList.remove("active");
+  confirmCallback = null;
+}
+document.getElementById("btnConfirmAction").onclick = () => {
+  if(confirmCallback) confirmCallback();
+  closeConfirm();
+};
+
+// Time utils
+function getStartOfDay(d) { const r=new Date(d); r.setHours(0,0,0,0); return r; }
+function getStartOfWeek(d) { 
+  const r=new Date(d); r.setHours(0,0,0,0); 
+  const day = r.getDay(); const diff = r.getDate() - day + (day===0?-6:1);
+  return new Date(r.setDate(diff));
+}
+function getStartOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+
+function getPeriodRange() {
+  const start = new Date(currentDate);
+  let from, to;
+  if(currentPeriod === "day") {
+    from = getStartOfDay(start);
+    to = new Date(from); to.setDate(to.getDate()+1);
+  } else if(currentPeriod === "week") {
+    from = getStartOfWeek(start);
+    to = new Date(from); to.setDate(to.getDate()+7);
+  } else {
+    from = getStartOfMonth(start);
+    to = new Date(from); to.setMonth(to.getMonth()+1);
+  }
+  return { from: from.getTime(), to: to.getTime() };
+}
+
+function getTotalSecs(sessions) {
+  return sessions.reduce((acc, s) => acc + s.duration, 0);
+}
+
+function fmtHMS(totalSecs) {
+  const h = Math.floor(totalSecs/3600);
+  const m = Math.floor((totalSecs%3600)/60);
+  const s = Math.floor(totalSecs%60);
+  return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+function fmtHM(totalSecs) {
+  const h = Math.floor(totalSecs/3600);
+  const m = Math.floor((totalSecs%3600)/60);
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  if (m > 0) return `${m}m`;
+  if (totalSecs > 0) return `<1m`;
+  return `0m`;
+}
+
+function formatGoalTime(mins) {
+  if (!mins) return "0m";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  return `${m}m`;
+}
+
+function liveElapsedSeconds() {
+  if(!state.active || state.active.isPaused) return state.active ? state.active.accumulatedSeconds : 0;
+  return state.active.accumulatedSeconds + (Date.now() - state.active.segmentStart) / 1000;
+}
+
+function getTodaySessionsForSkill(skillId) {
+  const todayStart = getStartOfDay(new Date()).getTime();
+  return state.sessions.filter(s => s.skillId === skillId && s.start >= todayStart);
+}
+
+/* ============================================================
+   UI RENDERING
+============================================================ */
+const elHero = document.getElementById("heroArea");
+const elGrid = document.getElementById("skillsGrid");
+const elAnalytics = document.getElementById("analyticsArea");
+
+function renderAll() {
+  renderHero();
+  renderGrid();
+  renderAnalytics();
+  if (dashboardSkillId) renderDashboard();
+}
+
+function createDOMTask(t, skill, isActive, isPaused, isDashboard = false) {
+  const isThisTaskActive = isActive && !isPaused && state.active.taskId === t.id;
+  const isThisTaskPaused = isActive && isPaused && state.active.taskId === t.id;
+  const isSelected = selectedTaskId === t.id;
+  
+  const idPrefix = isDashboard ? 'dash-' : '';
+  const clickAction = isDashboard ? `selectTaskFromDashboard('${skill.id}', '${t.id}')` : `selectTaskRow('${t.id}')`;
+  
+  return `
+    <div class="task-item ${t.done ? 'done' : ''} ${isSelected ? 'selected' : ''} ${isThisTaskActive ? 'running' : ''} ${isThisTaskPaused ? 'paused' : ''}" 
+         id="${idPrefix}task-${t.id}"
+         onclick="${clickAction}"
+         draggable="true" 
+         ondragstart="dragStartTask(event, '${t.id}')" 
+         ondragover="dragOverTask(event)" 
+         ondrop="dropTask(event, '${skill.id}', '${t.id}')" 
+         ondragend="dragEndTask(event)">
+         
+      <div class="task-checkbox" onclick="event.stopPropagation(); toggleTask('${skill.id}', '${t.id}')">
+        ${t.done ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+      </div>
+      <span class="task-text truncate" title="${t.text}">${t.text}</span>
+      <input class="task-edit-input" type="text" value="${t.text}" onclick="event.stopPropagation()" onblur="saveRename('${skill.id}', '${t.id}', this.value)" onkeydown="if(event.key==='Enter') this.blur()">
+      
+      <div class="task-actions">
+        ${isDashboard ? `
+        <button class="task-icon-btn" onclick="event.stopPropagation(); renameTask('${idPrefix}task-${t.id}')" title="Rename">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        </button>
+        <button class="task-icon-btn task-del" onclick="event.stopPropagation(); delTask('${skill.id}', '${t.id}')" title="Delete">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        ` : ''}
+        <div class="task-drag-handle" title="Drag to reorder">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="4" y1="8" x2="20" y2="8"></line><line x1="4" y1="16" x2="20" y2="16"></line></svg>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleHeroTasks() {
+  expandedHeroTasks = !expandedHeroTasks;
+  renderHero();
+}
+
+function toggleDashActiveTasks() {
+  expandedDashActiveTasks = !expandedDashActiveTasks;
+  renderDashboard();
+}
+
+function toggleDashDoneTasks() {
+  expandedDashDoneTasks = !expandedDashDoneTasks;
+  renderDashboard();
+}
+
+function loadMoreSkills() {
+  visibleSkillsCount += 6;
+  renderGrid();
+}
+
+function loadMoreSessions() {
+  visibleSessionsCount += 25;
+  renderDashboard();
+}
+
+function renderHero() {
+  if(state.skills.length === 0) {
+    elHero.innerHTML = `
+      <div class="hero hero-empty">
+        <h1 class="hero-title" style="font-size: 26px; font-weight: 500; color: var(--text); margin-bottom: 12px;">Start your first ledger entry</h1>
+        <p style="color: var(--text-dim); font-size: 14.5px; max-width: 440px; margin: 0 auto 24px; line-height: 1.5;">Add a skill you're learning, then press start whenever you sit down to practice. Tracker.io keeps the clock even after you close the tab.</p>
+        <button class="btn-primary" style="background: var(--accent); color: white; padding: 0 24px; border-radius: 20px; font-weight: 600;" onclick="openModal()">+ Add a skill</button>
+      </div>
+    `;
+    return;
+  }
+
+  if(!selectedSkillId && state.skills.length > 0) {
+    selectedSkillId = state.skills[0].id;
+  }
+
+  const skill = getSkill(selectedSkillId);
+  if(!skill) return;
+
+  const isActive = state.active && state.active.skillId === skill.id;
+  const isPaused = isActive && state.active.isPaused;
+  
+  let secToday = getTotalSecs(getTodaySessionsForSkill(skill.id));
+  if(isActive) secToday += liveElapsedSeconds();
+  
+  const goalSecs = (skill.goalMins || 60) * 60;
+  let pct = Math.min(100, Math.round((secToday / goalSecs) * 100));
+  const dashoffset = 283 - (283 * pct) / 100; 
+  const timerDisplay = isActive ? fmtHMS(liveElapsedSeconds()) : "00:00:00";
+  
+  let btnHTML = '';
+
+  if(isActive && isPaused) {
+    btnHTML = `
+      <button class="btn-primary" onclick="resumeTracking()" style="background:${skill.color}">
+        <svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Resume
+      </button>
+      <button class="btn-stop-icon" onclick="stopTracking()" title="Complete session">
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </button>`;
+  } else if(isActive && !isPaused) {
+    btnHTML = `
+      <button class="btn-primary btn-pause" onclick="pauseTracking()">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg> Pause
+      </button>
+      <button class="btn-stop-icon" onclick="stopTracking()" title="Complete session">
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </button>`;
+  } else {
+    btnHTML = `
+      <button class="btn-primary" onclick="startTracking('${skill.id}')" style="background:${skill.color}">
+        <svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Start
+      </button>`;
+  }
+
+  const tasks = skill.tasks || [];
+  const activeTasks = tasks.filter(t => !t.done);
+
+  // In-place hero task expansion logic
+  let visibleActiveTasks = expandedHeroTasks ? activeTasks : activeTasks.slice(0, 2);
+  let tasksList = visibleActiveTasks.map(t => createDOMTask(t, skill, isActive, isPaused, false)).join('');
+
+  if (activeTasks.length > 2) {
+    tasksList += `
+      <div class="task-completed-toggle" onclick="toggleHeroTasks()" style="justify-content: center; margin-top: 4px; padding: 8px; border: 1px dashed var(--border-light); border-radius: var(--radius-sm); text-align: center; transition: all 0.2s;">
+        <span style="color: var(--text-dim); margin: 0 auto; display: flex; align-items: center; gap: 6px;">
+          ${expandedHeroTasks ? 'Show less' : `View all ${activeTasks.length} tasks`}
+          <svg class="icon" style="width:14px;height:14px; transform: ${expandedHeroTasks ? 'rotate(180deg)' : 'none'}; transition: transform 0.2s;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </span>
+      </div>
+    `;
+  } else if (tasks.length === 0) {
+    tasksList = `<div class="task-list-empty">No tasks yet — plan from the dashboard.</div>`;
+  }
+
+  elHero.innerHTML = `
+    <div class="hero">
+      <div class="hero-active-content">
+        
+        <div class="hero-info">
+          <div class="hero-header-row">
+            <h2 class="hero-skillname">${skill.name}</h2>
+            <div class="goal-pill" style="--pill-color:${skill.color}; --pill-pct:${pct}%;"><div class="goal-pill-fill"></div><span class="goal-pill-label">Daily Target • ${formatGoalTime(skill.goalMins)}</span></div>
+          </div>
+          
+          <div class="tasks-container">
+             <div class="task-list">
+               ${tasksList}
+             </div>
+          </div>
+
+          <div class="hero-actions">
+            ${btnHTML}
+          </div>
+        </div>
+
+        <div class="hero-timer-zone">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 100 100">
+              <circle class="ring-track" cx="50" cy="50" r="45"></circle>
+              ${isActive ? `<circle class="ring-fill" id="ringFill" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="${283 - (283 * ((liveElapsedSeconds() % 60) / 60))}" style="stroke:${isPaused ? '#d4a017' : skill.color}; transition:none;"></circle>` : ''}
+            </svg>
+            <div class="ring-center">
+              <div class="ring-time" id="liveTimer">${timerDisplay}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+function renderGrid() {
+  let html = '';
+  const visibleSkills = state.skills.slice(0, visibleSkillsCount);
+  
+  if (visibleSkills.length > 0) {
+    visibleSkills.forEach(s => {
+      let todaySecs = getTotalSecs(getTodaySessionsForSkill(s.id));
+      if(state.active && state.active.skillId === s.id) todaySecs += liveElapsedSeconds();
+      
+      const allSess = state.sessions.filter(x => x.skillId === s.id);
+      const allSecs = getTotalSecs(allSess);
+
+      html += `
+        <div class="skill-card ${selectedSkillId === s.id ? 'active-card' : ''}" onclick="openSkillDashboard('${s.id}')">
+          <div class="card-tab" style="background:${s.color}"></div>
+          
+          <div class="card-top">
+            <h3 class="card-name">${s.name}</h3>
+          </div>
+          
+          <div class="card-bottom">
+            <div class="card-stat">Today: <b>${fmtHM(todaySecs)}</b></div>
+            <div class="card-stat">Total: <b>${fmtHM(allSecs)}</b></div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  html += `
+    <div class="skill-card-empty" onclick="openModal()">
+      <svg class="icon" style="color:var(--text-faint); margin-bottom:4px;" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <p>Add a skill</p>
+    </div>
+  `;
+  
+  if (state.skills.length > visibleSkillsCount) {
+    html += `<div style="grid-column: 1 / -1; text-align: center; margin-top: 1rem;"><button class="btn-secondary" onclick="loadMoreSkills()">Load more</button></div>`;
+  }
+  
+  elGrid.innerHTML = html;
+}
+
+function openSkillDashboard(id) {
+  dashboardSkillId = id;
+  // Make the active tracked skill instantly sync to this dashboard view for continuity
+  selectedSkillId = id;
+  
+  // Reset pagination state for clean view
+  visibleSessionsCount = 25;
+  expandedDashActiveTasks = false;
+  expandedDashDoneTasks = false;
+  
+  renderAll();
+  document.getElementById('skillDashboardOverlay').classList.add('active');
+}
+
+function closeSkillDashboard() {
+  document.getElementById('skillDashboardOverlay').classList.remove('active');
+  setTimeout(() => { dashboardSkillId = null; }, 300);
+}
+
+function buildHeatmap(skill) {
+  // Build 365-day heatmap like GitHub contributions
+  const WEEKS = 53;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  // Find the Sunday that starts our grid (53 weeks back from the Sunday on/before today)
+  const dayOfWeek = today.getDay(); // 0=Sun
+  const gridEnd = new Date(today); // last day shown = today
+  const gridStart = new Date(today);
+  gridStart.setDate(gridStart.getDate() - (WEEKS * 7 - 1));
+
+  // Map date string -> total seconds for this skill
+  const dayMap = {};
+  state.sessions.filter(s => s.skillId === skill.id).forEach(s => {
+    const d = new Date(s.start);
+    d.setHours(0,0,0,0);
+    const key = d.toISOString().slice(0,10);
+    dayMap[key] = (dayMap[key] || 0) + s.duration;
+  });
+
+  // Max value for intensity scaling
+  const vals = Object.values(dayMap);
+  const maxVal = vals.length ? Math.max(...vals) : 1;
+
+  // Build columns (each = one week, Sun→Sat)
+  const skillColor = skill.color || '#548c71';
+
+  // Month label positions
+  const monthLabels = [];
+  let prevMonth = -1;
+  const colData = [];
+
+  for (let w = 0; w < WEEKS; w++) {
+    const cells = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(gridStart);
+      date.setDate(date.getDate() + w * 7 + d);
+      if (date > today) { cells.push(null); continue; }
+      const key = date.toISOString().slice(0,10);
+      const secs = dayMap[key] || 0;
+      const intensity = secs > 0 ? Math.max(0.15, secs / maxVal) : 0;
+      const isToday = date.getTime() === today.getTime();
+      cells.push({ date, key, secs, intensity, isToday });
+
+      if (date.getDate() === 1 && date.getMonth() !== prevMonth) {
+        monthLabels.push({ week: w, label: date.toLocaleDateString('en-US', { month: 'short' }) });
+        prevMonth = date.getMonth();
+      }
+    }
+    colData.push(cells);
+  }
+
+  // Render month labels
+  let monthHtml = '<div class="heatmap-month-labels">';
+  monthLabels.forEach(ml => {
+    monthHtml += `<span class="heatmap-month-label" style="left:${(ml.week / 52) * 100}%;">${ml.label}</span>`;
+  });
+  monthHtml += '</div>';
+
+  // Day labels (Mon, Wed, Fri only)
+  const dayLabelHtml = `
+    <div class="heatmap-day-labels">
+      <div class="heatmap-day-label" style="height:12px;"></div>
+      <div class="heatmap-day-label" style="height:12px; margin-top:3px;">Mon</div>
+      <div class="heatmap-day-label" style="height:12px; margin-top:3px;"></div>
+      <div class="heatmap-day-label" style="height:12px; margin-top:3px;">Wed</div>
+      <div class="heatmap-day-label" style="height:12px; margin-top:3px;"></div>
+      <div class="heatmap-day-label" style="height:12px; margin-top:3px;">Fri</div>
+      <div class="heatmap-day-label" style="height:12px; margin-top:3px;"></div>
+    </div>`;
+
+  // Render cells
+  let colsHtml = '';
+  colData.forEach(cells => {
+    colsHtml += '<div class="heatmap-col">';
+    cells.forEach(cell => {
+      if (!cell) { colsHtml += '<div class="heatmap-cell" style="visibility:hidden;"></div>'; return; }
+      const bg = cell.secs > 0
+        ? `color-mix(in srgb, ${skillColor} ${Math.round(cell.intensity * 100)}%, var(--bg-elevated))`
+        : 'var(--bg-elevated)';
+      const dateLabel = cell.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const tip = cell.secs > 0 ? `${dateLabel}\n${fmtHM(cell.secs)} logged` : `${dateLabel}\nNo activity`;
+      colsHtml += `<div class="heatmap-cell${cell.isToday ? ' today' : ''}" style="background:${bg};" data-tip="${tip}"></div>`;
+    });
+    colsHtml += '</div>';
+  });
+
+  // Legend
+  const legendSteps = [0.2, 0.45, 0.65, 0.85, 1.0];
+  const legendHtml = `
+    <div class="heatmap-legend">
+      <span class="heatmap-legend-label">Less</span>
+      ${legendSteps.map(v => `<div class="heatmap-legend-cell" style="background:color-mix(in srgb, ${skillColor} ${Math.round(v*100)}%, var(--bg-elevated));"></div>`).join('')}
+      <span class="heatmap-legend-label">More</span>
+    </div>`;
+
+  return `
+    <div class="heatmap-wrap">
+      ${monthHtml}
+      <div class="heatmap-body">
+        ${dayLabelHtml}
+        <div style="display:flex; justify-content:space-between; width:100%; min-width:0;">
+          ${colsHtml}
+        </div>
+      </div>
+      ${legendHtml}
+    </div>`;
+}
+
+function buildSessionFeed(skill) {
+  const allSkillSessions = state.sessions.filter(s => s.skillId === skill.id).sort((a,b) => b.start - a.start);
+  if (!allSkillSessions.length) return `<p style="color:var(--text-faint); font-size:13.5px; padding-top:0.5rem;">No sessions logged yet.</p>`;
+
+  const skillSessions = allSkillSessions.slice(0, visibleSessionsCount);
+
+  // Group by calendar date
+  const groups = {};
+  const groupOrder = [];
+  skillSessions.forEach(s => {
+    const d = new Date(s.start);
+    d.setHours(0,0,0,0);
+    const key = d.toISOString().slice(0,10);
+    if (!groups[key]) { groups[key] = { date: d, sessions: [], total: 0 }; groupOrder.push(key); }
+    groups[key].sessions.push(s);
+    groups[key].total += s.duration;
+  });
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+
+  let feedHtml = '<div class="session-feed">';
+  groupOrder.forEach(key => {
+    const g = groups[key];
+    let dayLabel;
+    if (g.date.getTime() === today.getTime()) dayLabel = 'Today';
+    else if (g.date.getTime() === yesterday.getTime()) dayLabel = 'Yesterday';
+    else dayLabel = g.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+    feedHtml += `
+      <div class="session-day-group">
+        <div class="session-day-header">
+          <span>${dayLabel}</span>
+          <span class="session-day-total">${fmtHM(g.total)} total</span>
+        </div>`;
+
+    g.sessions.forEach(s => {
+      const timeStr = new Date(s.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      const taskName = s.taskId ? (skill.tasks.find(t => t.id === s.taskId)?.text || 'Deleted Task') : 'General';
+      feedHtml += `
+        <div class="session-commit-row" style="border-left-color:${skill.color};">
+          <span class="session-commit-task" title="${taskName}">${taskName}</span>
+          <span class="session-commit-duration">${fmtHM(s.duration)}</span>
+          <span class="session-commit-time">${timeStr}</span>
+          <button class="session-commit-edit" onclick="openEditLog('${s.id}')" title="Edit">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          </button>
+        </div>`;
+    });
+
+    feedHtml += '</div>';
+  });
+
+  feedHtml += '</div>';
+  
+  if (allSkillSessions.length > visibleSessionsCount) {
+    feedHtml += `<div style="text-align: center; margin-top: 1rem;"><button class="btn-secondary" onclick="loadMoreSessions()">Load more</button></div>`;
+  }
+  
+  return feedHtml;
+}
+
+function renderDashboard() {
+  if (!dashboardSkillId) return;
+  const skill = getSkill(dashboardSkillId);
+  if (!skill) return;
+  
+  const isActive = state.active && state.active.skillId === skill.id;
+  const isPaused = isActive && state.active.isPaused;
+  const allSecs = getTotalSecs(state.sessions.filter(x => x.skillId === skill.id));
+  const todaySecs = getTotalSecs(getTodaySessionsForSkill(skill.id)) + (isActive ? liveElapsedSeconds() : 0);
+  const dashGoalSecs = (skill.goalMins || 60) * 60;
+  const dashPillPct = Math.min(100, Math.round((todaySecs / dashGoalSecs) * 100));
+  const totalSessions = state.sessions.filter(x => x.skillId === skill.id).length;
+  
+  const tasks = skill.tasks || [];
+  const activeTasks = tasks.filter(t => !t.done);
+  const doneTasks = tasks.filter(t => t.done);
+  
+  // Dashboard Tasks Pagination limit to 10
+  let visibleActive = expandedDashActiveTasks ? activeTasks : activeTasks.slice(0, 10);
+  
+  let activeList = visibleActive.length > 0 
+    ? visibleActive.map(t => createDOMTask(t, skill, isActive, isPaused, true)).join('')
+    : `<div class="task-list-empty">No active tasks. Add one to start planning.</div>`;
+    
+  if (activeTasks.length > 10) {
+    activeList += `
+      <div class="task-completed-toggle" onclick="toggleDashActiveTasks()" style="justify-content: center; margin-top: 4px; padding: 8px; border: 1px dashed var(--border-light); border-radius: var(--radius-sm); text-align: center; transition: all 0.2s;">
+        <span style="color: var(--text-dim); margin: 0 auto; display: flex; align-items: center; gap: 6px;">
+          ${expandedDashActiveTasks ? 'Show less' : `View all ${activeTasks.length} active tasks`}
+          <svg class="icon" style="width:14px;height:14px; transform: ${expandedDashActiveTasks ? 'rotate(180deg)' : 'none'}; transition: transform 0.2s;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </span>
+      </div>`;
+  }
+
+  let visibleDone = expandedDashDoneTasks ? doneTasks : doneTasks.slice(0, 10);
+  let doneList = doneTasks.length > 0 
+    ? `<div class="task-completed-toggle" style="margin-top:1rem; cursor:default; padding-left:0;"><span>Completed (${doneTasks.length})</span></div>` +
+      visibleDone.map(t => createDOMTask(t, skill, isActive, isPaused, true)).join('')
+    : '';
+
+  if (doneTasks.length > 10) {
+    doneList += `
+      <div class="task-completed-toggle" onclick="toggleDashDoneTasks()" style="justify-content: center; margin-top: 4px; padding: 8px; border: 1px dashed var(--border-light); border-radius: var(--radius-sm); text-align: center; transition: all 0.2s;">
+        <span style="color: var(--text-dim); margin: 0 auto; display: flex; align-items: center; gap: 6px;">
+          ${expandedDashDoneTasks ? 'Show less' : `View all ${doneTasks.length} completed tasks`}
+          <svg class="icon" style="width:14px;height:14px; transform: ${expandedDashDoneTasks ? 'rotate(180deg)' : 'none'}; transition: transform 0.2s;" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </span>
+      </div>`;
+  }
+
+  document.getElementById("dashContentArea").innerHTML = `
+    <div class="dash-header-banner" style="background: linear-gradient(135deg, ${skill.color}15 0%, var(--bg-card) 100%); border-color: ${skill.color}33;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.5rem;">
+        <div style="display:flex; flex-direction:column; gap:10px; min-width:0;">
+          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+            <h2 style="font-family:var(--font-serif); font-size:26px; font-weight:500; color:var(--text); line-height:1.1; margin:0;">${skill.name}</h2>
+            <div class="goal-pill" style="--pill-color:${skill.color}; --pill-pct:${dashPillPct}%;"><div class="goal-pill-fill"></div><span class="goal-pill-label">Daily Target • ${formatGoalTime(skill.goalMins)}</span></div>
+          </div>
+          ${skill.description ? `<p style="font-size:13.5px; color:var(--text-dim); max-width:520px; margin:0;">${skill.description}</p>` : ''}
+        </div>
+        <button class="btn-icon" onclick="openModal('${skill.id}')" title="Edit Skill" style="flex-shrink:0;">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        </button>
+      </div>
+      <div style="display:flex; gap:2.5rem; flex-wrap:wrap;">
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-faint); font-weight:600;">Time Today</span>
+          <span style="font-family:var(--font-serif); font-size:24px; color:var(--text-dim); line-height:1.1; font-weight:400;" id="dashLiveTimer">${fmtHM(todaySecs)}</span>
+        </div>
+        <div style="width:1px; background:var(--border-light); align-self:stretch;"></div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-faint); font-weight:600;">Total Invested</span>
+          <span style="font-family:var(--font-serif); font-size:24px; color:var(--text-dim); line-height:1.1; font-weight:400;">${fmtHM(allSecs)}</span>
+        </div>
+        <div style="width:1px; background:var(--border-light); align-self:stretch;"></div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <span style="font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-faint); font-weight:600;">Sessions</span>
+          <span style="font-family:var(--font-serif); font-size:24px; color:var(--text-dim); line-height:1.1; font-weight:400;">${totalSessions}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-layout">
+      <div>
+        <h3 class="dash-section-title">Tasks</h3>
+        <div class="task-input-wrap" style="margin-bottom:1.5rem;">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <input type="text" id="dashNewTaskInp" class="task-input" placeholder="Add a new task or topic..." onkeydown="if(event.key==='Enter') addTask('${skill.id}', 'dashNewTaskInp')">
+        </div>
+        <div class="task-list">
+          ${activeList}
+          ${doneList}
+        </div>
+      </div>
+
+      <div>
+        <h3 class="dash-section-title">Activity</h3>
+        ${buildHeatmap(skill)}
+      </div>
+
+      <div>
+        <h3 class="dash-section-title">Sessions</h3>
+        ${buildSessionFeed(skill)}
+      </div>
+    </div>
+  `;
+}
+
+function selectTaskFromDashboard(skillId, taskId) {
+  if (state.active) {
+    showToast("Stop the timer to switch tasks.");
+    return;
+  }
+  selectedSkillId = skillId;
+  selectedTaskId = taskId;
+  renderAll(); // Re-render silently tracks it, honors manual sort order
+}
+
+function focusOnDashboardSkill() {
+  selectedSkillId = dashboardSkillId;
+  closeSkillDashboard();
+  renderAll();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function renderAnalytics() {
+  const { from, to } = getPeriodRange();
+  
+  let periodStr = "";
+  if(currentPeriod === "day") {
+    periodStr = currentDate.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  } else if (currentPeriod === "week") {
+    const fromDate = new Date(from);
+    const toDate = new Date(to - 1);
+    periodStr = `${fromDate.toLocaleDateString('en-US', {month:'short', day:'numeric'})} - ${toDate.toLocaleDateString('en-US', {month:'short', day:'numeric'})}`;
+  } else {
+    periodStr = currentDate.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+  }
+
+  let panelContent = '';
+
+  if (state.skills.length === 0) {
+     panelContent = `<div class="empty-analytics">Add a skill to view your ledger analytics.</div>`;
+  } else {
+    const sessions = state.sessions.filter(s => s.start >= from && s.start < to);
+    let totalSecs = getTotalSecs(sessions);
+    
+    if(state.active && state.active.segmentStart >= from && state.active.segmentStart < to) {
+      totalSecs += liveElapsedSeconds();
+    }
+
+    const totalSessCount = sessions.length;
+    const avgSession = totalSessCount > 0 ? Math.round(totalSecs / totalSessCount) : 0;
+
+    let skillTotals = {};
+    
+    state.skills.forEach(s => skillTotals[s.id] = 0);
+    
+    sessions.forEach(s => {
+        if(skillTotals[s.skillId] !== undefined) skillTotals[s.skillId] += s.duration;
+    });
+    
+    if(state.active && skillTotals[state.active.skillId] !== undefined) {
+        skillTotals[state.active.skillId] += liveElapsedSeconds();
+    }
+
+    // Pure SVG Solid Pie Chart with precisely angled leader lines
+    const cx = 250, cy = 140, r = 85;
+    let pieSvg = '';
+    let currentAngle = -Math.PI / 2;
+
+    const sortedSkills = state.skills.map(s => ({
+        ...s,
+        val: skillTotals[s.id]
+    })).sort((a,b) => b.val - a.val);
+
+    const visibleSkills = sortedSkills.filter(s => s.val > 0);
+    
+    if(totalSecs > 0) {
+        visibleSkills.forEach(s => {
+          const sliceAngle = (s.val / totalSecs) * 2 * Math.PI;
+          const endAngle = currentAngle + sliceAngle;
+
+          // If a single skill takes up 100%, render a circle
+          if (sliceAngle >= 2 * Math.PI - 0.001) {
+              pieSvg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${s.color}" />`;
+              const lx3 = cx + r + 20, ly3 = cy;
+              pieSvg += `<polyline points="${cx+r},${cy} ${lx3},${ly3}" fill="none" stroke="var(--border-light)"/>`;
+              pieSvg += `<text x="${lx3+6}" y="${ly3+4}" fill="var(--text-dim)" font-size="12" font-family="var(--font-sans)">${s.name} \u2022 ${fmtHM(s.val)}</text>`;
+          } else {
+              // Draw Pie Wedge
+              const x1 = cx + r * Math.cos(currentAngle);
+              const y1 = cy + r * Math.sin(currentAngle);
+              const x2 = cx + r * Math.cos(endAngle);
+              const y2 = cy + r * Math.sin(endAngle);
+
+              const largeArc = sliceAngle > Math.PI ? 1 : 0;
+              const path = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+              pieSvg += `<path d="${path}" fill="${s.color}" />`;
+
+              // Draw Callout / Leader Line
+              const midAngle = currentAngle + sliceAngle / 2;
+              const isRight = Math.cos(midAngle) >= 0;
+              
+              const startX = cx + (r) * Math.cos(midAngle);
+              const startY = cy + (r) * Math.sin(midAngle);
+              
+              const elbowX = cx + (r + 15) * Math.cos(midAngle);
+              const elbowY = cy + (r + 15) * Math.sin(midAngle);
+              
+              const textX = isRight ? cx + r + 35 : cx - r - 35;
+              
+              pieSvg += `<polyline points="${startX},${startY} ${elbowX},${elbowY} ${textX},${elbowY}" fill="none" stroke="var(--border-light)" stroke-width="1" />`;
+              
+              const anchor = isRight ? "start" : "end";
+              pieSvg += `<text x="${isRight ? textX + 6 : textX - 6}" y="${elbowY + 4}" fill="var(--text-dim)" font-size="11.5" font-weight="500" font-family="var(--font-sans)" text-anchor="${anchor}">${s.name} \u2022 ${fmtHM(s.val)}</text>`;
+          }
+          currentAngle = endAngle;
+        });
+    } else {
+        pieSvg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="transparent" stroke="var(--border-light)" stroke-width="1" stroke-dasharray="4 4" />`;
+        pieSvg += `<text x="${cx}" y="${cy}" fill="var(--text-faint)" font-size="13" font-family="var(--font-sans)" text-anchor="middle" dominant-baseline="middle">No data</text>`;
+    }
+
+    panelContent = `
+      <div class="panel-section">
+        <!-- Clean, uniform top stats row -->
+        <div class="analytics-stats-row">
+          <div class="stat-group">
+            <span class="stat-lbl">Total Time</span>
+            <span class="stat-val">${fmtHM(totalSecs)}</span>
+          </div>
+          <div class="stat-group">
+            <span class="stat-lbl">Sessions</span>
+            <span class="stat-val">${totalSessCount}</span>
+          </div>
+          <div class="stat-group">
+            <span class="stat-lbl">Avg. Duration</span>
+            <span class="stat-val">${fmtHM(avgSession)}</span>
+          </div>
+        </div>
+
+        <div class="hero-spark" id="trendChartArea"></div>
+      </div>
+
+      <!-- Solid Pie Chart Layout -->
+      <div class="panel-section pie-container">
+         <svg class="pie-svg" viewBox="0 0 500 280">
+            ${pieSvg}
+         </svg>
+      </div>
+    `;
+  }
+
+  elAnalytics.innerHTML = `
+    <div class="analytics-header">
+      <div class="tabs">
+        <button class="tab-btn ${currentPeriod==='day'?'active':''}" onclick="setPeriod('day')">Day</button>
+        <button class="tab-btn ${currentPeriod==='week'?'active':''}" onclick="setPeriod('week')">Week</button>
+        <button class="tab-btn ${currentPeriod==='month'?'active':''}" onclick="setPeriod('month')">Month</button>
+      </div>
+      <div class="period-nav">
+        <button class="btn-icon" onclick="shiftDate(-1)"><svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+        <div class="period-label">${periodStr}</div>
+        <button class="btn-icon" onclick="shiftDate(1)"><svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+      </div>
+    </div>
+
+    <div class="analytics-panel">
+      ${panelContent}
+    </div>
+  `;
+
+  if (state.skills.length > 0) {
+    const sessionsForChart = state.sessions.filter(s => s.start >= from && s.start < to);
+    renderTrendChart(from, to, sessionsForChart);
+  }
+}
+
+function renderTrendChart(from, to, sessions) {
+  const elChart = document.getElementById("trendChartArea");
+  if(!elChart) return;
+
+  let buckets = [];
+
+  if (currentPeriod === 'day') {
+    for (let h = 0; h < 24; h++) {
+      const bFrom = from + h * 3600000;
+      buckets.push({ from: bFrom, to: bFrom + 3600000, val: 0, label: null });
+    }
+    [0, 4, 8, 12, 16, 20].forEach(h => {
+      const ampm = h < 12 ? 'AM' : 'PM';
+      const hr12 = h % 12 === 0 ? 12 : h % 12;
+      buckets[h].label = `${hr12} ${ampm}`;
+    });
+  } else if (currentPeriod === 'week') {
+    const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    for (let i = 0; i < 7; i++) {
+      let d = new Date(from); d.setDate(d.getDate() + i);
+      const dayStart = getStartOfDay(d).getTime();
+      buckets.push({ from: dayStart, to: dayStart + 86400000, val: 0, label: DAY_NAMES[i], date: new Date(d) });
+    }
+  } else {
+    let d = new Date(from);
+    while (d.getTime() < to) {
+      const dayStart = getStartOfDay(d).getTime();
+      buckets.push({ from: dayStart, to: dayStart + 86400000, val: 0, label: null, date: new Date(dayStart) });
+      d.setDate(d.getDate() + 1);
+    }
+    const interval = Math.max(1, Math.ceil(buckets.length / 4));
+    buckets.forEach((b, i) => {
+      if (i % interval === 0) {
+        b.label = b.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+      }
+    });
+  }
+
+  sessions.forEach(s => {
+    const bucket = buckets.find(b => s.start >= b.from && s.start < b.to);
+    if (bucket) bucket.val += s.duration;
+  });
+
+  if (state.active) {
+    const bucket = buckets.find(b => state.active.segmentStart >= b.from && state.active.segmentStart < b.to);
+    if (bucket) bucket.val += liveElapsedSeconds();
+  }
+
+  let maxVal = 1;
+  buckets.forEach(b => { if (b.val > maxVal) maxVal = b.val; });
+
+  const nowMs = Date.now();
+  const dense = buckets.length > 12;
+
+  const barsHtml = buckets.map((b, i) => {
+    const isCurrent = nowMs >= b.from && nowMs < b.to;
+    const isEmpty = b.val <= 0;
+    const heightPct = isEmpty ? 3 : Math.max(7, (b.val / maxVal) * 100);
+
+    let tip;
+    if (currentPeriod === 'day') {
+      const hrLabel = new Date(b.from).toLocaleTimeString('en-US', { hour: 'numeric' });
+      tip = `${hrLabel}&#xa;${b.val > 0 ? fmtHM(b.val) : 'No activity'}`;
+    } else {
+      const dLabel = new Date(b.from).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      tip = `${dLabel}&#xa;${b.val > 0 ? fmtHM(b.val) : 'No activity'}`;
+    }
+
+    const pct = i / (buckets.length - 1 || 1);
+    let tooltipClass = '';
+    if (pct < 0.25) tooltipClass = 'tooltip-start';
+    else if (pct > 0.75) tooltipClass = 'tooltip-end';
+
+    return `<div class="bar-col ${isCurrent ? 'is-current' : ''} ${isEmpty ? 'is-empty' : ''} ${tooltipClass}">
+      <div class="bar-fill" data-tip="${tip}" style="height:${heightPct}%; --i:${i};"></div>
+    </div>`;
+  }).join('');
+
+  const labelsHtml = buckets.map(b => {
+    const isCurrent = nowMs >= b.from && nowMs < b.to;
+    return `<span class="bar-label-slot ${isCurrent && b.label ? 'active-label' : ''}">${b.label || ''}</span>`;
+  }).join('');
+
+  elChart.innerHTML = `
+    <div class="bar-chart-area">
+      <div class="bar-track" style="gap:${dense ? '2px' : '6px'}">${barsHtml}</div>
+    </div>
+    <div class="bar-labels" style="gap:${dense ? '2px' : '6px'}">${labelsHtml}</div>
+  `;
+}
+
+/* ============================================================
+   ACTIONS
+============================================================ */
+function selectSkill(id) {
+  selectedSkillId = id;
+  selectedTaskId = null;
+  renderAll();
+}
+
+function selectTaskRow(taskId) {
+  if (state.active) return;
+  if (selectedTaskId === taskId) {
+     selectedTaskId = null;
+  } else {
+     selectedTaskId = taskId;
+  }
+  renderHero();
+}
+
+function startTracking(skillId, specificTaskId = null) {
+  if(state.active) {
+    if(state.active.skillId !== skillId) {
+      stopTracking();
+    } else if (specificTaskId && state.active.taskId !== specificTaskId) {
+      stopTracking();
+    } else {
+      resumeTracking();
+      return;
+    }
+  }
+  
+  state.active = { 
+    skillId, 
+    taskId: specificTaskId || selectedTaskId, 
+    segmentStart: Date.now(),
+    accumulatedSeconds: 0,
+    isPaused: false
+  };
+  selectedSkillId = skillId;
+  saveState();
+  renderAll();
+  
+  if(!timerInterval) {
+    timerInterval = setInterval(tick, 250);
+  }
+}
+
+function pauseTracking() {
+  if(!state.active || state.active.isPaused) return;
+  
+  const elapsed = (Date.now() - state.active.segmentStart) / 1000;
+  state.active.accumulatedSeconds += elapsed;
+  state.active.isPaused = true;
+  state.active.segmentStart = Date.now();
+  saveState();
+  renderAll();
+}
+
+function resumeTracking() {
+  if(!state.active || !state.active.isPaused) return;
+  
+  state.active.isPaused = false;
+  state.active.segmentStart = Date.now();
+  saveState();
+  renderAll();
+  
+  if(!timerInterval) {
+    timerInterval = setInterval(tick, 250);
+  }
+}
+
+function stopTracking() {
+  if(!state.active) return;
+  
+  let duration = state.active.accumulatedSeconds;
+  if(!state.active.isPaused) {
+    duration += (Date.now() - state.active.segmentStart) / 1000;
+  }
+  duration = Math.floor(duration);
+  
+  if(duration > 0) {
+    state.sessions.push({
+      id: generateId(),
+      skillId: state.active.skillId,
+      taskId: state.active.taskId || null,
+      start: Date.now() - Math.floor(duration * 1000),
+      end: Date.now(),
+      duration: duration
+    });
+  }
+  state.active = null;
+  saveState();
+  renderAll();
+  
+  if(timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function tick() {
+  if(!state.active || state.active.isPaused) {
+    if(timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    return;
+  }
+  const el = document.getElementById("liveTimer");
+  if(el) {
+    const secs = liveElapsedSeconds();
+    el.textContent = fmtHMS(secs);
+  }
+  const ringFillEl = document.getElementById("ringFill");
+  if(ringFillEl) {
+    const secs = liveElapsedSeconds();
+    const fraction = (secs % 60) / 60;
+    ringFillEl.setAttribute("stroke-dashoffset", 283 - (283 * fraction));
+  }
+  const dEl = document.getElementById("dashLiveTimer");
+  if(dEl && dashboardSkillId === state.active.skillId) {
+    dEl.textContent = fmtHM(getTotalSecs(getTodaySessionsForSkill(dashboardSkillId)) + liveElapsedSeconds());
+  }
+  if(Math.floor(liveElapsedSeconds()) % 15 === 0) renderAll(); 
+}
+
+function setPeriod(p) { 
+  currentPeriod = p; 
+  renderAll(); 
+}
+function shiftDate(dir) {
+  if(currentPeriod === "day") currentDate.setDate(currentDate.getDate() + dir);
+  else if(currentPeriod === "week") currentDate.setDate(currentDate.getDate() + (dir*7));
+  else currentDate.setMonth(currentDate.getMonth() + dir);
+  renderAll();
+}
+
+/* ============================================================
+   TASKS ACTIONS
+============================================================ */
+function addTask(skillId, inputId) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  const val = inp.value.trim();
+  if(!val) return;
+  const s = getSkill(skillId);
+  if(!s) return;
+  if(!s.tasks) s.tasks = [];
+  const newTaskId = generateId();
+  s.tasks.push({ id: newTaskId, text: val, done: false });
+  selectedTaskId = newTaskId;
+  inp.value = '';
+  if(dashboardSkillId) renderDashboard(); else renderHero();
+}
+
+function toggleTask(skillId, taskId) {
+  const s = getSkill(skillId);
+  if(!s || !s.tasks) return;
+  const t = s.tasks.find(x => x.id === taskId);
+  if(t) {
+    t.done = !t.done;
+    saveState();
+    if(dashboardSkillId) renderDashboard(); else renderHero();
+  }
+}
+
+function renameTask(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.classList.add('editing');
+  const inp = el.querySelector('.task-edit-input');
+  inp.focus();
+  inp.setSelectionRange(inp.value.length, inp.value.length);
+}
+
+function saveRename(skillId, taskId, val) {
+  const s = getSkill(skillId);
+  if (!s || !s.tasks) return;
+  const t = s.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  
+  const newText = val.trim();
+  if (newText && newText !== t.text) {
+    t.text = newText;
+    saveState();
+    if(dashboardSkillId) renderDashboard(); else renderHero();
+  }
+}
+
+function delTask(skillId, taskId) {
+  const s = getSkill(skillId);
+  if(!s || !s.tasks) return;
+  const idx = s.tasks.findIndex(x => x.id === taskId);
+  if(idx === -1) return;
+  const [removed] = s.tasks.splice(idx, 1);
+  if (selectedTaskId === taskId) selectedTaskId = null;
+  saveState();
+  renderAll();
+  showToast("Task deleted.", "Undo", () => {
+    const skillNow = getSkill(skillId);
+    if(!skillNow) return;
+    if(!skillNow.tasks) skillNow.tasks = [];
+    const insertAt = Math.min(idx, skillNow.tasks.length);
+    skillNow.tasks.splice(insertAt, 0, removed);
+    saveState();
+    renderAll();
+  });
+}
+
+function dragStartTask(e, taskId) {
+  draggedTaskId = taskId;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    if(e.target.classList) e.target.classList.add('dragging');
+  }, 0);
+}
+
+function dragOverTask(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function dropTask(e, skillId, targetTaskId) {
+  e.preventDefault();
+  if (!draggedTaskId || draggedTaskId === targetTaskId) return;
+  
+  const s = getSkill(skillId);
+  if (!s || !s.tasks) return;
+  
+  const fromIdx = s.tasks.findIndex(x => x.id === draggedTaskId);
+  const toIdx = s.tasks.findIndex(x => x.id === targetTaskId);
+  
+  if (fromIdx > -1 && toIdx > -1) {
+    const [movedTask] = s.tasks.splice(fromIdx, 1);
+    s.tasks.splice(toIdx, 0, movedTask);
+    saveState();
+    if(dashboardSkillId) renderDashboard(); else renderHero();
+  }
+}
+
+function dragEndTask(e) {
+  draggedTaskId = null;
+  if(e.target.classList) e.target.classList.remove('dragging');
+}
+
+/* ============================================================
+   MODALS & TOAST
+============================================================ */
+const modal = document.getElementById("skillModal");
+const iName = document.getElementById("inpName");
+const iGoal = document.getElementById("inpGoal");
+const iDesc = document.getElementById("inpDesc");
+const cPicker = document.getElementById("colorPicker");
+const btnDel = document.getElementById("btnDeleteSkill");
+let selectedColor = COLORS[0];
+
+function openModal(id = null) {
+  editSkillId = id;
+  
+  cPicker.innerHTML = COLORS.map(c => 
+    `<div class="color-swatch ${c===selectedColor?'selected':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`
+  ).join('');
+
+  if(id) {
+    const s = getSkill(id);
+    document.getElementById("modalTitle").textContent = "Edit Skill";
+    iName.value = s.name;
+    iGoal.value = s.goalMins;
+    iDesc.value = s.description || "";
+    selectColor(s.color);
+    btnDel.classList.remove("hidden");
+  } else {
+    document.getElementById("modalTitle").textContent = "Add Skill";
+    iName.value = "";
+    iGoal.value = "60";
+    iDesc.value = "";
+    selectColor(COLORS[0]);
+    btnDel.classList.add("hidden");
+  }
+  
+  modal.classList.add("active");
+  iName.focus();
+}
+
+function closeModal() { modal.classList.remove("active"); }
+
+function selectColor(c) {
+  selectedColor = c;
+  const swatches = cPicker.querySelectorAll('.color-swatch');
+  swatches.forEach(el => {
+    el.classList.remove('selected');
+    if(el.style.backgroundColor === c || el.style.backgroundColor === hexToRgb(c)) {
+      el.classList.add('selected');
+    }
+  });
+}
+
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})` : null;
+}
+
+document.getElementById("btnSaveSkill").onclick = () => {
+  const name = iName.value.trim();
+  const goal = parseInt(iGoal.value) || 60;
+  const desc = iDesc.value.trim();
+  if(!name) return showToast("Name is required");
+
+  if(editSkillId) {
+    const s = getSkill(editSkillId);
+    s.name = name; s.goalMins = goal; s.color = selectedColor; s.description = desc;
+    showToast("Skill updated");
+  } else {
+    const newId = generateId();
+    state.skills.push({ id: newId, name, color: selectedColor, goalMins: goal, description: desc, tasks: [] });
+    if(!selectedSkillId) selectedSkillId = newId;
+    showToast("Skill added");
+  }
+  saveState(); renderAll(); closeModal();
+};
+
+document.getElementById("btnDeleteSkill").onclick = () => {
+  showConfirm("Delete Skill", "Delete this skill and all its history? This action cannot be undone.", () => {
+    state.skills = state.skills.filter(s => s.id !== editSkillId);
+    state.sessions = state.sessions.filter(s => s.skillId !== editSkillId);
+    if(selectedSkillId === editSkillId) selectedSkillId = null;
+    if(dashboardSkillId === editSkillId) closeSkillDashboard();
+    if(state.active && state.active.skillId === editSkillId) stopTracking();
+    saveState(); renderAll(); closeModal();
+    showToast("Skill deleted");
+  });
+};
+
+document.getElementById("btnCloseModal").onclick = closeModal;
+document.getElementById("btnCancelModal").onclick = closeModal;
+
+document.getElementById("btnAddLogHeader").onclick = () => openAddLog();
+
+document.getElementById("fileImport").addEventListener("change", function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!parsed.skills || !parsed.sessions) throw new Error("Invalid format");
+      showConfirm("Import Data", "This will replace your current data with the imported file. Continue?", () => {
+        state = { skills: parsed.skills, sessions: parsed.sessions, active: parsed.active || null };
+        if(state.active && state.active.accumulatedSeconds === undefined) {
+          state.active.accumulatedSeconds = 0;
+        }
+        if(state.active && state.active.isPaused === undefined) {
+          state.active.isPaused = false;
+        }
+        saveState(); renderAll(); showToast("Data imported.");
+      });
+    }catch(err){ showToast("Invalid backup file."); }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+let toastHideTimer = null;
+function showToast(msg, actionLabel, actionFn) {
+  const t = document.getElementById("toast");
+  if(toastHideTimer) clearTimeout(toastHideTimer);
+
+  if (actionLabel && actionFn) {
+    t.innerHTML = `<span>${msg}</span><button class="toast-action-btn" id="toastActionBtn">${actionLabel}</button>`;
+    document.getElementById("toastActionBtn").onclick = () => {
+      actionFn();
+      t.classList.remove("show");
+    };
+  } else {
+    t.innerHTML = `<span>${msg}</span>`;
+  }
+
+  t.classList.add("show");
+  toastHideTimer = setTimeout(() => t.classList.remove("show"), actionLabel ? 5000 : 3000);
+}
+
+/* ============================================================
+   SETTINGS PANEL
+============================================================ */
+const settingsOverlay = document.getElementById("settingsOverlay");
+
+function openSettings() {
+  settingsOverlay.classList.add("active");
+}
+function closeSettings() {
+  settingsOverlay.classList.remove("active");
+}
+
+document.getElementById("btnSettings").onclick = openSettings;
+document.getElementById("btnCloseSettings").onclick = closeSettings;
+settingsOverlay.addEventListener("click", (e) => {
+  if(e.target === settingsOverlay) closeSettings();
+});
+
+// Settings rows wire-up
+document.getElementById("sRowExport").onclick = () => {
+  closeSettings();
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+  const a = document.createElement('a');
+  a.setAttribute("href", dataStr);
+  a.setAttribute("download", "tracker_backup.json");
+  a.click();
+};
+
+document.getElementById("sRowImport").onclick = () => {
+  closeSettings();
+  document.getElementById("fileImport").click();
+};
+
+document.getElementById("sRowReset").onclick = () => {
+  closeSettings();
+  showConfirm("Reset All Data", "This will permanently delete ALL skills, tasks, and session history. This cannot be undone. Continue?", () => {
+    if(timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    state = { skills: [], sessions: [], active: null };
+    selectedSkillId = null;
+    selectedTaskId = null;
+    dashboardSkillId = null;
+    saveState();
+    renderAll();
+    showToast("All data reset.");
+  });
+};
+
+/* ---- Add Log Modal ---- */
+let addLogSkillId = null;
+
+function openAddLog() {
+  addLogSkillId = state.skills.length > 0 ? state.skills[0].id : null;
+  
+  // Set today's date as default
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const dd = String(today.getDate()).padStart(2,'0');
+  document.getElementById("addLogDate").value = `${yyyy}-${mm}-${dd}`;
+  document.getElementById("addLogHours").value = "0";
+  document.getElementById("addLogMins").value = "30";
+
+  // Render skill selector
+  const skillSelect = document.getElementById("addLogSkillSelect");
+  skillSelect.innerHTML = state.skills.map(s => `<option value="${s.id}">${s.name}</option>`).join('') || `<option value="">No skills yet</option>`;
+  if (addLogSkillId) skillSelect.value = addLogSkillId;
+
+  document.getElementById("addLogModal").classList.add("active");
+  
+  if (addLogSkillId) {
+     selectAddLogSkill(addLogSkillId);
+  }
+}
+
+function selectAddLogSkill(id) {
+  addLogSkillId = id;
+  const skillSelect = document.getElementById("addLogSkillSelect");
+  if (skillSelect.value !== id) skillSelect.value = id;
+
+  const skill = getSkill(id);
+  const taskSelect = document.getElementById("addLogTask");
+  const taskGroup = document.getElementById("addLogTaskGroup");
+  if(skill && skill.tasks && skill.tasks.length > 0) {
+    taskSelect.innerHTML = `<option value="">No specific task</option>` + skill.tasks.map(t => `<option value="${t.id}">${t.text}</option>`).join('');
+    taskGroup.style.display = "block";
+  } else {
+    taskSelect.innerHTML = `<option value="">No specific task</option>`;
+    taskGroup.style.display = "none";
+  }
+}
+
+function closeAddLog() {
+  document.getElementById("addLogModal").classList.remove("active");
+}
+
+document.getElementById("btnCloseAddLog").onclick = closeAddLog;
+document.getElementById("btnCancelAddLog").onclick = closeAddLog;
+
+document.getElementById("btnSaveLog").onclick = () => {
+  if(!addLogSkillId) return showToast("Select a skill first.");
+  const hrs = parseInt(document.getElementById("addLogHours").value) || 0;
+  const mins = parseInt(document.getElementById("addLogMins").value) || 0;
+  const duration = (hrs * 3600) + (mins * 60);
+  if(duration <= 0) return showToast("Duration must be greater than 0.");
+  
+  const dateVal = document.getElementById("addLogDate").value;
+  if(!dateVal) return showToast("Please select a date.");
+  
+  const [y, m, d] = dateVal.split('-').map(Number);
+  const logDate = new Date(y, m-1, d, 12, 0, 0); // noon that day
+  const endMs = logDate.getTime();
+  const startMs = endMs - duration * 1000;
+  
+  const taskId = document.getElementById("addLogTask").value || null;
+  
+  state.sessions.push({
+    id: generateId(),
+    skillId: addLogSkillId,
+    taskId: taskId,
+    start: startMs,
+    end: endMs,
+    duration: duration
+  });
+  
+  saveState();
+  renderAll();
+  closeAddLog();
+  showToast("Log added manually.");
+};
+
+/* ---- Edit Session Modal ---- */
+let editSessionId = null;
+
+function openEditLog(sessionId) {
+  const session = state.sessions.find(s => s.id === sessionId);
+  if(!session) return;
+  editSessionId = sessionId;
+  
+  const skill = getSkill(session.skillId);
+  
+  const taskSelect = document.getElementById("editLogTask");
+  const taskGroup = document.getElementById("editLogTaskGroup");
+  if(skill && skill.tasks && skill.tasks.length > 0) {
+    taskSelect.innerHTML = `<option value="">No specific task</option>` + skill.tasks.map(t => `<option value="${t.id}">${t.text}</option>`).join('');
+    taskGroup.style.display = "block";
+    taskSelect.value = session.taskId || "";
+  } else {
+    taskSelect.innerHTML = `<option value="">No specific task</option>`;
+    taskGroup.style.display = "none";
+  }
+  
+  const hrs = Math.floor(session.duration / 3600);
+  const mins = Math.floor((session.duration % 3600) / 60);
+  document.getElementById("editLogHours").value = hrs;
+  document.getElementById("editLogMins").value = mins;
+  
+  const d = new Date(session.start);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  document.getElementById("editLogDate").value = `${yyyy}-${mm}-${dd}`;
+  
+  document.getElementById("editLogModal").classList.add("active");
+}
+
+function closeEditLog() {
+  document.getElementById("editLogModal").classList.remove("active");
+  editSessionId = null;
+}
+
+function saveEditLog() {
+  if(!editSessionId) return;
+  const session = state.sessions.find(s => s.id === editSessionId);
+  if(!session) return;
+  
+  const hrs = parseInt(document.getElementById("editLogHours").value) || 0;
+  const mins = parseInt(document.getElementById("editLogMins").value) || 0;
+  const duration = (hrs * 3600) + (mins * 60);
+  if(duration <= 0) return showToast("Duration must be greater than 0.");
+  
+  const dateVal = document.getElementById("editLogDate").value;
+  if(!dateVal) return showToast("Please select a date.");
+  
+  const taskId = document.getElementById("editLogTask").value || null;
+  
+  const origDate = new Date(session.start);
+  const [y, m, d] = dateVal.split('-').map(Number);
+  const newStart = new Date(y, m-1, d, origDate.getHours(), origDate.getMinutes(), origDate.getSeconds());
+  
+  session.duration = duration;
+  session.start = newStart.getTime();
+  session.end = session.start + (duration * 1000);
+  session.taskId = taskId;
+  
+  saveState();
+  renderAll();
+  closeEditLog();
+  showToast("Session updated.");
+}
+
+function deleteLog() {
+  if(!editSessionId) return;
+  showConfirm("Delete Session", "Are you sure you want to delete this session log?", () => {
+    state.sessions = state.sessions.filter(s => s.id !== editSessionId);
+    saveState();
+    renderAll();
+    closeEditLog();
+    showToast("Session deleted.");
+  });
+}
+
+// Start application
+loadState();
+renderAll();
+</script>
+</body>
+</html>
