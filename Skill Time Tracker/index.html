@@ -1205,10 +1205,12 @@ function openSkillDashboard(id) {
   
   renderAll();
   document.getElementById('skillDashboardOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeSkillDashboard() {
   document.getElementById('skillDashboardOverlay').classList.remove('active');
+  document.body.style.overflow = '';
   setTimeout(() => { dashboardSkillId = null; }, 300);
 }
 
