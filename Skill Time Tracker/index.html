@@ -500,6 +500,9 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
    MODALS, TOAST, TOOLTIPS
 ============================================================ */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+/* Confirm dialog must always render above any other open modal (e.g. Edit Session, Edit Skill)
+   so its Confirm/Cancel buttons are clickable instead of being blocked by the modal underneath. */
+#confirmModal { z-index: 350; }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
 .modal-content {
   position: relative; background: var(--bg-card); width: 100%; max-width: 460px; max-height: 88vh;
@@ -528,6 +531,59 @@ select.form-control {
   background-size: 16px 16px;
 }
 .color-picker { display: flex; gap: 12px; }
+
+/* ============================================================
+   SORT CONTROL
+============================================================ */
+.section-title-group { display: flex; align-items: baseline; gap: 10px; }
+.sort-control { position: relative; }
+
+.sort-trigger {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11.5px; font-weight: 400; color: var(--text-faint);
+  padding: 2px 6px; border-radius: 4px; background: none;
+  transition: color 0.15s, background 0.15s; letter-spacing: 0.01em;
+  position: relative; top: -1px;
+}
+.sort-trigger svg { transition: transform 0.15s; flex-shrink: 0; }
+.sort-trigger:hover { color: var(--text-dim); background: rgba(255,255,255,0.04); }
+.sort-trigger.open svg { transform: rotate(180deg); }
+.sort-trigger.active { color: var(--text-dim); }
+.sort-trigger.open { color: var(--text-dim); background: rgba(255,255,255,0.04); }
+
+.sort-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; width: 188px;
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: 10px; box-shadow: var(--shadow-hover);
+  padding: 4px; z-index: 60; overflow: hidden;
+  opacity: 0; visibility: hidden; transform: translateY(-6px) scale(0.98);
+  transform-origin: top left;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+.sort-menu::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 8px);
+}
+.sort-menu > * { position: relative; z-index: 1; }
+.sort-menu.open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+.sort-menu-item {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px;
+  border-radius: 6px; font-size: 13px; font-weight: 400; color: var(--text-dim);
+  background: none; text-align: left; transition: background 0.12s, color 0.12s;
+}
+.sort-menu-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+.sort-menu-item .item-label { flex: 1; min-width: 0; }
+.sort-menu-item.selected { color: var(--text); font-weight: 500; background: rgba(84,140,113,0.1); }
+.sort-menu-item.selected:hover { background: rgba(84,140,113,0.15); }
+.sort-menu-item .check-icon { width: 13px; height: 13px; color: var(--accent); opacity: 0; flex-shrink: 0; }
+.sort-menu-item.selected .check-icon { opacity: 1; }
+.sort-menu-divider { height: 1px; background: var(--border); margin: 4px 2px; }
+
+.drag-handle { display: flex; align-items: center; cursor: grab; flex-shrink: 0; color: var(--text-faint); }
+.drag-handle:active { cursor: grabbing; }
+.drag-handle svg { width: 14px; height: 14px; }
+.skill-card.dragging { opacity: 0.4; border-style: dashed; }
+.skill-card.manual-mode { cursor: grab; }
 .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.1s; }
 .color-swatch:hover { transform: scale(1.1); }
 .color-swatch.selected { box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--text); }
@@ -619,7 +675,38 @@ select.form-control {
     <section id="heroArea"></section>
 
     <div class="section-header">
-      <h2 class="section-title">Your skills</h2>
+      <div class="section-title-group">
+        <h2 class="section-title">Your skills</h2>
+        <div class="sort-control" id="sortControl">
+          <button class="sort-trigger" id="btnSortTrigger" title="Sort skills" onclick="toggleSortMenu(event)">
+            <span id="sortTriggerLabel">Sort</span>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="sort-menu" id="sortMenu">
+            <button class="sort-menu-item" data-val="manual" onclick="setSkillSort('manual')">
+              <span class="item-label">Custom order</span>
+              <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+            <button class="sort-menu-item" data-val="name" onclick="setSkillSort('name')">
+              <span class="item-label">Name (A-Z)</span>
+              <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+            <button class="sort-menu-item" data-val="total" onclick="setSkillSort('total')">
+              <span class="item-label">Total time</span>
+              <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+            <button class="sort-menu-item" data-val="today" onclick="setSkillSort('today')">
+              <span class="item-label">Tracked today</span>
+              <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+            <div class="sort-menu-divider"></div>
+            <button class="sort-menu-item" data-val="recent" onclick="setSkillSort('recent')">
+              <span class="item-label">Recently active</span>
+              <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     <section id="skillsGrid" class="skills-grid"></section>
 
@@ -628,7 +715,6 @@ select.form-control {
 
 </div>
 
-<!-- NEW: Dedicated Skill Dashboard Overlay -->
 <div id="skillDashboardOverlay" class="dashboard-overlay">
   <div class="dash-container">
     <div class="dash-header-bar">
@@ -674,7 +760,6 @@ select.form-control {
   </div>
 </div>
 
-<!-- Custom Confirmation Modal -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal-content confirm-modal-content">
     <h3 class="modal-title" id="confirmTitle">Are you sure?</h3>
@@ -688,7 +773,6 @@ select.form-control {
 
 <div id="toast"></div>
 
-<!-- Settings Panel -->
 <div class="settings-overlay" id="settingsOverlay">
   <div class="settings-panel" id="settingsPanel">
     <div class="settings-drag-handle"></div>
@@ -740,7 +824,6 @@ select.form-control {
   </div>
 </div>
 
-<!-- Add Log Modal -->
 <div class="modal-overlay" id="addLogModal">
   <div class="modal-content">
     <div class="modal-header">
@@ -777,7 +860,6 @@ select.form-control {
   </div>
 </div>
 
-<!-- Edit Log Modal -->
 <div class="modal-overlay" id="editLogModal">
   <div class="modal-content">
     <div class="modal-header">
@@ -840,6 +922,8 @@ let currentDate = new Date();
 let timerInterval = null;
 let draggedTaskId = null;
 let expandedHeroTasks = false;
+let draggedSkillId = null;
+let skillSortOrder = localStorage.getItem("tracker_io_sort") || "manual";
 
 function generateId() { return Math.random().toString(36).substr(2, 9); }
 
@@ -1150,9 +1234,118 @@ function renderHero() {
   `;
 }
 
+/* ---- Sort menu (Notion-style) ---- */
+function toggleSortMenu(e) {
+  e.stopPropagation();
+  document.getElementById('sortMenu').classList.toggle('open');
+  document.getElementById('btnSortTrigger').classList.toggle('open');
+}
+function closeSortMenu() {
+  const menu = document.getElementById('sortMenu');
+  const trig = document.getElementById('btnSortTrigger');
+  if(menu) menu.classList.remove('open');
+  if(trig) trig.classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const control = document.getElementById('sortControl');
+  if(control && !control.contains(e.target)) closeSortMenu();
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') closeSortMenu();
+});
+
+function setSkillSort(val) {
+  skillSortOrder = val;
+  localStorage.setItem("tracker_io_sort", val);
+  closeSortMenu();
+  renderGrid();
+}
+
+function updateSortMenuUI() {
+  const trig = document.getElementById('btnSortTrigger');
+  const trigLabel = document.getElementById('sortTriggerLabel');
+  const isActive = skillSortOrder !== 'manual';
+  if (trig) trig.classList.toggle('active', isActive);
+  if (trigLabel) {
+    const labels = { manual: 'Sort', name: 'Name', total: 'Total Time', today: 'Today', recent: 'Recent' };
+    trigLabel.textContent = isActive ? (labels[skillSortOrder] || 'Sort') : 'Sort';
+  }
+  document.querySelectorAll('.sort-menu-item').forEach(item => {
+    item.classList.toggle('selected', item.dataset.val === skillSortOrder);
+  });
+}
+
+function getSortedSkills() {
+  const arr = state.skills.slice();
+  if(skillSortOrder === 'manual') return arr; // raw order = whatever the user dragged it into
+
+  const totalSecsFor = id => getTotalSecs(state.sessions.filter(x => x.skillId === id));
+  const todaySecsFor = id => {
+    let secs = getTotalSecs(getTodaySessionsForSkill(id));
+    if(state.active && state.active.skillId === id) secs += liveElapsedSeconds();
+    return secs;
+  };
+  const lastActiveFor = id => {
+    const sess = state.sessions.filter(x => x.skillId === id);
+    if(sess.length === 0) return 0;
+    return Math.max(...sess.map(s => s.end || s.start || 0));
+  };
+
+  switch(skillSortOrder) {
+    case "name":
+      arr.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case "total":
+      arr.sort((a, b) => totalSecsFor(b.id) - totalSecsFor(a.id));
+      break;
+    case "today":
+      arr.sort((a, b) => todaySecsFor(b.id) - todaySecsFor(a.id));
+      break;
+    case "recent":
+      arr.sort((a, b) => lastActiveFor(b.id) - lastActiveFor(a.id));
+      break;
+  }
+  return arr;
+}
+
+/* ---- Manual drag-to-reorder (mirrors the task drag pattern) ---- */
+function dragStartSkill(e, skillId) {
+  if(skillSortOrder !== 'manual') return;
+  draggedSkillId = skillId;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => { if(e.target.classList) e.target.classList.add('dragging'); }, 0);
+}
+function dragOverSkill(e) {
+  if(skillSortOrder !== 'manual') return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+function dropSkill(e, targetSkillId) {
+  if(skillSortOrder !== 'manual') return;
+  e.preventDefault();
+  if(!draggedSkillId || draggedSkillId === targetSkillId) return;
+
+  const fromIdx = state.skills.findIndex(x => x.id === draggedSkillId);
+  const toIdx = state.skills.findIndex(x => x.id === targetSkillId);
+  if(fromIdx > -1 && toIdx > -1) {
+    const [moved] = state.skills.splice(fromIdx, 1);
+    state.skills.splice(toIdx, 0, moved);
+    saveState();
+    renderGrid();
+  }
+}
+function dragEndSkill(e) {
+  draggedSkillId = null;
+  if(e.target.classList) e.target.classList.remove('dragging');
+}
+
 function renderGrid() {
   let html = '';
-  const visibleSkills = state.skills.slice(0, visibleSkillsCount);
+  updateSortMenuUI();
+
+  const isManual = skillSortOrder === 'manual';
+  const sortedSkills = getSortedSkills();
+  const visibleSkills = sortedSkills.slice(0, visibleSkillsCount);
   
   if (visibleSkills.length > 0) {
     visibleSkills.forEach(s => {
@@ -1162,12 +1355,26 @@ function renderGrid() {
       const allSess = state.sessions.filter(x => x.skillId === s.id);
       const allSecs = getTotalSecs(allSess);
 
+      const dragHandle = isManual ? `
+        <span class="drag-handle" title="Drag to reorder" onclick="event.stopPropagation()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"></circle><circle cx="9" cy="12" r="1.5"></circle><circle cx="9" cy="18" r="1.5"></circle><circle cx="15" cy="6" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle><circle cx="15" cy="18" r="1.5"></circle></svg>
+        </span>` : '';
+
       html += `
-        <div class="skill-card ${selectedSkillId === s.id ? 'active-card' : ''}" onclick="openSkillDashboard('${s.id}')">
+        <div class="skill-card ${selectedSkillId === s.id ? 'active-card' : ''} ${isManual ? 'manual-mode' : ''}"
+             onclick="openSkillDashboard('${s.id}')"
+             draggable="${isManual}"
+             ondragstart="dragStartSkill(event, '${s.id}')"
+             ondragover="dragOverSkill(event)"
+             ondrop="dropSkill(event, '${s.id}')"
+             ondragend="dragEndSkill(event)">
           <div class="card-tab" style="background:${s.color}"></div>
           
           <div class="card-top">
-            <h3 class="card-name">${s.name}</h3>
+            <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+              ${dragHandle}
+              <h3 class="card-name truncate">${s.name}</h3>
+            </div>
           </div>
           
           <div class="card-bottom">
@@ -1612,7 +1819,6 @@ function renderAnalytics() {
 
     panelContent = `
       <div class="panel-section">
-        <!-- Clean, uniform top stats row -->
         <div class="analytics-stats-row">
           <div class="stat-group">
             <span class="stat-lbl">Total Time</span>
@@ -1631,7 +1837,6 @@ function renderAnalytics() {
         <div class="hero-spark" id="trendChartArea"></div>
       </div>
 
-      <!-- Solid Pie Chart Layout -->
       <div class="panel-section pie-container">
          <svg class="pie-svg" viewBox="0 0 500 280">
             ${pieSvg}
