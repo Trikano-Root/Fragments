@@ -8,6 +8,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ---- Supabase project config ----
+  const SUPABASE_URL = "https://wbiwhusxjssiduyiigkw.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_5C8Mbx8JGAkYyvB0YeultQ_arPHujmE";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
 <style>
 /* ============================================================
    GLOBAL VARIABLES & BASE STYLES
@@ -60,6 +67,46 @@ html { scrollbar-color: var(--border-light) var(--bg-app); }
 ::-webkit-scrollbar-track { background: var(--bg-app); }
 ::-webkit-scrollbar-thumb { background-color: var(--border-light); border-radius: 8px; border: 3px solid var(--bg-app); }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--text-faint); }
+
+/* ============================================================
+   AUTH / LOGIN OVERLAY
+============================================================ */
+#auth-overlay {
+  position: fixed; inset: 0; background: var(--bg-app);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+#auth-box {
+  width: 100%; max-width: 340px; padding: 2rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+}
+#auth-box h2 {
+  font-family: var(--font-serif); color: var(--text); font-size: 22px;
+  margin-bottom: 1.25rem; text-align: center;
+}
+#auth-box input {
+  width: 100%; padding: 10px 12px; margin-bottom: 10px;
+  background: var(--bg-elevated); border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); color: var(--text); font-family: var(--font-sans);
+}
+#auth-box button {
+  width: 100%; padding: 10px; margin-top: 4px;
+  background: var(--accent); color: white; border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+#auth-box button:hover { background: var(--accent-hover); }
+#auth-box .auth-switch {
+  text-align: center; margin-top: 14px; font-size: 13px; color: var(--text-faint);
+}
+#auth-box .auth-switch a { color: var(--accent); cursor: pointer; }
+#auth-error {
+  color: var(--danger); font-size: 13px; margin-bottom: 10px; min-height: 16px;
+}
+#sync-status {
+  position: fixed; bottom: 12px; right: 16px; font-size: 12px;
+  color: var(--text-faint); z-index: 500;
+}
 
 .app-container {
   max-width: 900px; 
@@ -509,6 +556,21 @@ select.form-control {
 </head>
 <body>
 
+<div id="auth-overlay" class="hidden">
+  <div id="auth-box">
+    <h2>Tracker.io</h2>
+    <div id="auth-error"></div>
+    <input id="auth-email" type="email" placeholder="Email" autocomplete="email">
+    <input id="auth-password" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="auth-submit-btn" onclick="handleAuthSubmit()">Sign In</button>
+    <div class="auth-switch">
+      <span id="auth-switch-text">Don't have an account? <a onclick="toggleAuthMode()">Sign up</a></span>
+    </div>
+  </div>
+</div>
+
+<div id="sync-status" class="hidden">Synced</div>
+
 <div class="app-container">
   
   <header class="site-header">
@@ -521,6 +583,9 @@ select.form-control {
       </button>
       <button class="btn-icon" id="btnSettings" title="Settings">
         <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+      <button class="btn-icon" id="btnSignOut" title="Sign out" onclick="handleSignOut()">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
       </button>
     </div>
   </header>
@@ -787,32 +852,145 @@ function getLocalYMD(dt) {
   return `${y}-${m}-${d}`;
 }
 
-function loadState() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if(saved) {
-    try {
-      state = JSON.parse(saved);
-      if(!state.skills) state.skills = [];
-      if(!state.sessions) state.sessions = [];
-      if(state.active && state.active.accumulatedSeconds === undefined) {
-        state.active.accumulatedSeconds = 0;
-      }
-      if(state.active && state.active.isPaused === undefined) {
-        state.active.isPaused = false;
-      }
-      if(state.active && !state.active.isPaused) {
-        const elapsed = (Date.now() - state.active.segmentStart) / 1000;
-        state.active.accumulatedSeconds += elapsed;
-        state.active.isPaused = true; 
-        state.active.segmentStart = Date.now();
-        saveState();
-      }
-    } catch(e) { console.error("Error loading state", e); }
+let currentUser = null;
+let saveDebounceTimer = null;
+
+function normalizeLoadedState() {
+  if(!state.skills) state.skills = [];
+  if(!state.sessions) state.sessions = [];
+  if(state.active && state.active.accumulatedSeconds === undefined) {
+    state.active.accumulatedSeconds = 0;
+  }
+  if(state.active && state.active.isPaused === undefined) {
+    state.active.isPaused = false;
+  }
+  if(state.active && !state.active.isPaused) {
+    const elapsed = (Date.now() - state.active.segmentStart) / 1000;
+    state.active.accumulatedSeconds += elapsed;
+    state.active.isPaused = true;
+    state.active.segmentStart = Date.now();
+    saveState();
   }
 }
 
+// Fetches this user's row from Supabase and loads it into `state`.
+async function loadState() {
+  if(!currentUser) return;
+  setSyncStatus("Loading...");
+  const { data, error } = await sb
+    .from('app_state')
+    .select('data')
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+
+  if(error) {
+    console.error("Error loading state", error);
+    setSyncStatus("Load failed");
+    return;
+  }
+
+  if(data && data.data) {
+    state = data.data;
+    normalizeLoadedState();
+  } else {
+    // First time this user has ever logged in — create their row.
+    state = { skills: [], sessions: [], active: null };
+    await saveStateNow();
+  }
+  setSyncStatus("Synced");
+}
+
+// Debounced entry point — call this everywhere the old saveState() was called.
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  setSyncStatus("Saving...");
+  clearTimeout(saveDebounceTimer);
+  saveDebounceTimer = setTimeout(saveStateNow, 800);
+}
+
+// Actually sends the current state to Supabase right now.
+async function saveStateNow() {
+  if(!currentUser) return;
+  const { error } = await sb
+    .from('app_state')
+    .upsert({ user_id: currentUser.id, data: state, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+
+  if(error) {
+    console.error("Error saving state", error);
+    setSyncStatus("Save failed");
+  } else {
+    setSyncStatus("Synced");
+  }
+}
+
+function setSyncStatus(text) {
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  el.textContent = text;
+  el.classList.remove('hidden');
+}
+
+// ---------------- AUTH ----------------
+let authMode = "signin"; // or "signup"
+
+function toggleAuthMode() {
+  authMode = authMode === "signin" ? "signup" : "signin";
+  document.getElementById('auth-submit-btn').textContent = authMode === "signin" ? "Sign In" : "Sign Up";
+  document.getElementById('auth-switch-text').innerHTML = authMode === "signin"
+    ? 'Don\'t have an account? <a onclick="toggleAuthMode()">Sign up</a>'
+    : 'Already have an account? <a onclick="toggleAuthMode()">Sign in</a>';
+  document.getElementById('auth-error').textContent = "";
+}
+
+async function handleAuthSubmit() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errorEl = document.getElementById('auth-error');
+  errorEl.textContent = "";
+
+  if(!email || !password) {
+    errorEl.textContent = "Enter an email and password.";
+    return;
+  }
+
+  let result;
+  if(authMode === "signin") {
+    result = await sb.auth.signInWithPassword({ email, password });
+  } else {
+    result = await sb.auth.signUp({ email, password });
+  }
+
+  if(result.error) {
+    errorEl.textContent = result.error.message;
+    return;
+  }
+
+  if(authMode === "signup" && !result.data.session) {
+    errorEl.textContent = "Account created. Check your email to confirm, then sign in.";
+    return;
+  }
+
+  await onAuthReady(result.data.session.user);
+}
+
+async function onAuthReady(user) {
+  currentUser = user;
+  document.getElementById('auth-overlay').classList.add('hidden');
+  await loadState();
+  renderAll();
+}
+
+async function initApp() {
+  const { data } = await sb.auth.getSession();
+  if(data.session) {
+    await onAuthReady(data.session.user);
+  } else {
+    document.getElementById('auth-overlay').classList.remove('hidden');
+  }
+}
+
+async function handleSignOut() {
+  await sb.auth.signOut();
+  location.reload();
 }
 
 function getSkill(id) { return state.skills.find(s => s.id === id); }
@@ -2194,8 +2372,7 @@ function deleteLog() {
   });
 }
 
-loadState();
-renderAll();
+initApp();
 </script>
 </body>
 </html>
