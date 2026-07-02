@@ -106,6 +106,21 @@ html { scrollbar-color: var(--border-light) var(--bg-app); }
 #auth-error {
   color: var(--danger); font-size: 13px; margin-bottom: 10px; min-height: 16px;
 }
+.btn-google {
+  width: 100%; padding: 10px; display: flex; align-items: center; justify-content: center;
+  gap: 10px; background: #fff; color: #1f1f1f; border-radius: var(--radius-sm);
+  font-weight: 600; font-family: var(--font-sans); border: 1px solid var(--border-light);
+  margin-bottom: 14px;
+}
+.btn-google:hover { background: #f2f2f2; }
+.btn-google svg { width: 18px; height: 18px; flex-shrink: 0; }
+.auth-divider {
+  display: flex; align-items: center; gap: 10px; margin: 4px 0 14px;
+  color: var(--text-faint); font-size: 12px;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ""; flex: 1; height: 1px; background: var(--border-light);
+}
 #sync-status {
   position: fixed; bottom: 12px; right: 16px; font-size: 12px;
   color: var(--text-faint); z-index: 500;
@@ -145,6 +160,15 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   background: var(--bg-card); color: var(--text); transition: all 0.2s;
 }
 .btn-icon:hover { border-color: var(--text-dim); background: var(--border-light); }
+
+.btn-avatar {
+  width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  background: var(--accent); color: white; font-family: var(--font-serif); font-weight: 600;
+  font-size: 15px; transition: all 0.2s; cursor: pointer; flex-shrink: 0;
+}
+.btn-avatar:hover { border-color: var(--text-dim); filter: brightness(1.08); }
+.btn-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .btn-primary {
   background: var(--accent); color: white; padding: 0 20px; height: 40px; border-radius: 20px;
@@ -552,6 +576,28 @@ select.form-control {
 .settings-row-text span { font-size: 12px; color: var(--text-faint); }
 .settings-row-chevron { color: var(--text-faint); }
 .settings-divider { display: none; }
+
+.settings-profile-block {
+  display: flex; align-items: center; gap: 14px; padding: 20px 24px 16px;
+}
+.settings-profile-avatar {
+  width: 56px; height: 56px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: var(--accent); color: white; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-serif); font-size: 20px; font-weight: 600;
+}
+.settings-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.settings-profile-text { min-width: 0; flex: 1; }
+.settings-profile-name { font-family: var(--font-serif); font-size: 17px; color: var(--text); font-weight: 500; }
+.settings-profile-bio { font-size: 12px; color: var(--text-faint); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings-profile-email { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+
+.avatar-upload-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.avatar-upload-preview {
+  width: 64px; height: 64px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  background: var(--accent); color: white; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-serif); font-size: 22px; font-weight: 600;
+}
+.avatar-upload-preview img { width: 100%; height: 100%; object-fit: cover; }
 .time-inputs { display: flex; gap: 12px; align-items: center; }
 .time-inputs input { width: 80px; text-align: center; }
 .time-label { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
@@ -563,6 +609,11 @@ select.form-control {
   <div id="auth-box">
     <h2>Tracker.io</h2>
     <div id="auth-error"></div>
+    <button type="button" class="btn-google" id="btnGoogleSignIn" onclick="handleGoogleSignIn()">
+      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.6 35.4 27 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.7l6.6 5.4C41.4 35.9 44 30.4 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+      Continue with Google
+    </button>
+    <div class="auth-divider">or</div>
     <input id="auth-email" type="email" placeholder="Email" autocomplete="email">
     <input id="auth-password" type="password" placeholder="Password" autocomplete="current-password">
     <button id="auth-submit-btn" onclick="handleAuthSubmit()">Sign In</button>
@@ -584,11 +635,9 @@ select.form-control {
         <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Add log
       </button>
-      <button class="btn-icon" id="btnSettings" title="Settings">
-        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      </button>
-      <button class="btn-icon" id="btnSignOut" title="Sign out" onclick="handleSignOut()">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      <button class="btn-avatar" id="btnAvatar" title="Profile & settings" onclick="openSettings()">
+        <span id="avatarInitials">?</span>
+        <img id="avatarImg" class="hidden" src="" alt="">
       </button>
     </div>
   </header>
@@ -706,6 +755,28 @@ select.form-control {
     </div>
     <div class="settings-body">
 
+      <div class="settings-profile-block">
+        <div class="settings-profile-avatar" id="settingsAvatarWrap">
+          <span id="settingsAvatarInitials">?</span>
+          <img id="settingsAvatarImg" class="hidden" src="" alt="">
+        </div>
+        <div class="settings-profile-text">
+          <div class="settings-profile-name" id="settingsProfileName">—</div>
+          <div class="settings-profile-bio" id="settingsProfileBio"></div>
+          <div class="settings-profile-email" id="settingsProfileEmail"></div>
+        </div>
+      </div>
+      <div class="settings-row" id="sRowEditProfile">
+        <div class="settings-row-icon purple">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="settings-row-text">
+          <strong>Edit Profile</strong>
+          <span>Username, bio and photo</span>
+        </div>
+        <svg class="icon settings-row-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+
       <div class="settings-section-label">Data</div>
       <div class="settings-row" id="sRowExport">
         <div class="settings-row-icon green">
@@ -740,8 +811,53 @@ select.form-control {
         </div>
         <svg class="icon settings-row-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </div>
+
+      <div class="settings-section-label">Account</div>
+      <div class="settings-row" id="sRowSignOut">
+        <div class="settings-row-icon amber">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </div>
+        <div class="settings-row-text">
+          <strong>Sign Out</strong>
+          <span id="signOutSubtext">You'll need to sign back in to sync</span>
+        </div>
+      </div>
       <div style="height: 32px;"></div>
 
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editProfileModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit Profile</h3>
+      <button class="btn-icon" id="btnCloseEditProfile" style="border:none;">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="avatar-upload-row">
+      <div class="avatar-upload-preview" id="editAvatarPreviewWrap">
+        <span id="editAvatarInitials">?</span>
+        <img id="editAvatarImg" class="hidden" src="" alt="">
+      </div>
+      <div>
+        <input type="file" id="avatarFileInput" accept="image/*" class="hidden">
+        <button class="btn-secondary" id="btnChooseAvatar" type="button">Change Photo</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="inpUsername" class="form-control" placeholder="e.g., Nithish" maxlength="40">
+    </div>
+    <div class="form-group">
+      <label>Bio (Optional)</label>
+      <textarea id="inpBio" class="form-control" rows="2" placeholder="A short line about yourself" maxlength="140"></textarea>
+    </div>
+    <div class="modal-actions">
+      <div style="flex:1"></div>
+      <button class="btn-secondary" id="btnCancelEditProfile">Cancel</button>
+      <button class="btn-primary" id="btnSaveProfile">Save</button>
     </div>
   </div>
 </div>
@@ -857,6 +973,7 @@ function getLocalYMD(dt) {
 
 let currentUser = null;
 let saveDebounceTimer = null;
+let profile = { username: "", bio: "", avatar_url: "" };
 
 function normalizeLoadedState() {
   if(!state.skills) state.skills = [];
@@ -932,6 +1049,142 @@ function setSyncStatus(text) {
   el.classList.remove('hidden');
 }
 
+// ---------------- PROFILE ----------------
+
+function getInitials(name, email) {
+  const source = (name && name.trim()) || (email ? email.split('@')[0] : '') || '?';
+  const parts = source.trim().split(/\s+/);
+  if(parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return source.slice(0, 2).toUpperCase();
+}
+
+// Fetches this user's profile row, creating a default one on first login.
+async function loadProfile() {
+  if(!currentUser) return;
+  const { data, error } = await sb
+    .from('profiles')
+    .select('username, bio, avatar_url')
+    .eq('id', currentUser.id)
+    .maybeSingle();
+
+  if(error) {
+    console.error("Error loading profile", error);
+    return;
+  }
+
+  if(data) {
+    profile = { username: data.username || "", bio: data.bio || "", avatar_url: data.avatar_url || "" };
+  } else {
+    // First time this user has ever logged in — seed a default profile.
+    const defaultName = (currentUser.user_metadata && currentUser.user_metadata.full_name)
+      || (currentUser.email ? currentUser.email.split('@')[0] : 'You');
+    const defaultAvatar = (currentUser.user_metadata && currentUser.user_metadata.avatar_url) || "";
+    profile = { username: defaultName, bio: "", avatar_url: defaultAvatar };
+    await sb.from('profiles').upsert({
+      id: currentUser.id, username: profile.username, bio: profile.bio,
+      avatar_url: profile.avatar_url, updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+  }
+}
+
+async function saveProfile() {
+  if(!currentUser) return;
+  const { error } = await sb.from('profiles').upsert({
+    id: currentUser.id, username: profile.username, bio: profile.bio,
+    avatar_url: profile.avatar_url, updated_at: new Date().toISOString()
+  }, { onConflict: 'id' });
+  if(error) {
+    console.error("Error saving profile", error);
+    showToast("Couldn't save profile");
+    return false;
+  }
+  return true;
+}
+
+// Updates every avatar/name spot in the UI from the current `profile` + `currentUser`.
+function renderProfileUI() {
+  const initials = getInitials(profile.username, currentUser && currentUser.email);
+  const hasAvatar = !!profile.avatar_url;
+
+  const setAvatar = (initialsEl, imgEl) => {
+    const iEl = document.getElementById(initialsEl);
+    const imEl = document.getElementById(imgEl);
+    if(hasAvatar) {
+      imEl.src = profile.avatar_url;
+      imEl.classList.remove('hidden');
+      iEl.classList.add('hidden');
+    } else {
+      imEl.classList.add('hidden');
+      iEl.classList.remove('hidden');
+      iEl.textContent = initials;
+    }
+  };
+
+  setAvatar('avatarInitials', 'avatarImg');
+  setAvatar('settingsAvatarInitials', 'settingsAvatarImg');
+  setAvatar('editAvatarInitials', 'editAvatarImg');
+
+  document.getElementById('settingsProfileName').textContent = profile.username || "You";
+  document.getElementById('settingsProfileBio').textContent = profile.bio || "";
+  document.getElementById('settingsProfileBio').style.display = profile.bio ? "block" : "none";
+  document.getElementById('settingsProfileEmail').textContent = currentUser ? currentUser.email : "";
+}
+
+function openEditProfile() {
+  document.getElementById('inpUsername').value = profile.username || "";
+  document.getElementById('inpBio').value = profile.bio || "";
+  renderProfileUI();
+  closeSettings();
+  document.getElementById('editProfileModal').classList.add('active');
+}
+function closeEditProfile() {
+  document.getElementById('editProfileModal').classList.remove('active');
+}
+
+async function handleSaveProfile() {
+  profile.username = document.getElementById('inpUsername').value.trim() || profile.username || "You";
+  profile.bio = document.getElementById('inpBio').value.trim();
+  const ok = await saveProfile();
+  if(ok) {
+    renderProfileUI();
+    closeEditProfile();
+    showToast("Profile updated");
+  }
+}
+
+// Uploads a chosen image file to Supabase Storage and updates the avatar URL.
+async function handleAvatarFileChosen(file) {
+  if(!file || !currentUser) return;
+  if(!file.type.startsWith('image/')) {
+    showToast("Please choose an image file");
+    return;
+  }
+  if(file.size > 5 * 1024 * 1024) {
+    showToast("Image is too large (max 5MB)");
+    return;
+  }
+
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${currentUser.id}/avatar.${ext}`;
+
+  const { error: uploadError } = await sb.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true, cacheControl: '3600' });
+
+  if(uploadError) {
+    console.error("Avatar upload failed", uploadError);
+    showToast("Photo upload failed");
+    return;
+  }
+
+  const { data: publicData } = sb.storage.from('avatars').getPublicUrl(path);
+  // Cache-bust so the new photo shows immediately instead of a stale cached one.
+  profile.avatar_url = publicData.publicUrl + '?t=' + Date.now();
+  await saveProfile();
+  renderProfileUI();
+  showToast("Photo updated");
+}
+
 // ---------------- AUTH ----------------
 let authMode = "signin"; // or "signup"
 
@@ -979,6 +1232,8 @@ async function onAuthReady(user) {
   currentUser = user;
   document.getElementById('auth-overlay').classList.add('hidden');
   await loadState();
+  await loadProfile();
+  renderProfileUI();
   renderAll();
 }
 
@@ -989,6 +1244,25 @@ async function initApp() {
   } else {
     document.getElementById('auth-overlay').classList.remove('hidden');
   }
+
+  // Catches the redirect back from Google sign-in (and any other auth changes).
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if(event === 'SIGNED_IN' && session && (!currentUser || currentUser.id !== session.user.id)) {
+      await onAuthReady(session.user);
+    } else if(event === 'SIGNED_OUT') {
+      currentUser = null;
+    }
+  });
+}
+
+async function handleGoogleSignIn() {
+  const errorEl = document.getElementById('auth-error');
+  errorEl.textContent = "";
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if(error) errorEl.textContent = error.message;
 }
 
 async function handleSignOut() {
@@ -2220,9 +2494,28 @@ const settingsOverlay = document.getElementById("settingsOverlay");
 function openSettings() { settingsOverlay.classList.add("active"); }
 function closeSettings() { settingsOverlay.classList.remove("active"); }
 
-document.getElementById("btnSettings").onclick = openSettings;
 document.getElementById("btnCloseSettings").onclick = closeSettings;
 settingsOverlay.addEventListener("click", (e) => { if(e.target === settingsOverlay) closeSettings(); });
+
+document.getElementById("sRowEditProfile").onclick = openEditProfile;
+document.getElementById("btnCloseEditProfile").onclick = closeEditProfile;
+document.getElementById("btnCancelEditProfile").onclick = closeEditProfile;
+document.getElementById("btnSaveProfile").onclick = handleSaveProfile;
+document.getElementById("editProfileModal").addEventListener("click", (e) => {
+  if(e.target === document.getElementById("editProfileModal")) closeEditProfile();
+});
+
+document.getElementById("btnChooseAvatar").onclick = () => document.getElementById("avatarFileInput").click();
+document.getElementById("avatarFileInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  handleAvatarFileChosen(file);
+  e.target.value = "";
+});
+
+document.getElementById("sRowSignOut").onclick = () => {
+  closeSettings();
+  showConfirm("Sign Out", "You'll need to sign back in to access and sync your data. Continue?", handleSignOut);
+};
 
 document.getElementById("sRowExport").onclick = () => {
   closeSettings();
